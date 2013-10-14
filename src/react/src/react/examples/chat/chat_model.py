@@ -8,9 +8,10 @@ ChatRoom = record("ChatRoom", name    = "str",
                               members = "{User}",
                               msgs    = "[Msg]")
 
-Client = machine("Client", user    = "User")
-Server = machine("Server", clients = "{Client}", 
-                           rooms   = "[ChatRoom]")
+Client = machine("Client", user       = "User", 
+                           my_rooms   = "[ChatRoom]")
+Server = machine("Server", clients    = "[Client]", 
+                           rooms      = "[ChatRoom]")
 
 class Register(Event):
     sender   = dict(client = Client)
@@ -22,6 +23,14 @@ class Register(Event):
 
     def handler(self):
         self.client.user = User(name = self.name)
+
+class ListRooms(Event): 
+    sender   = dict(client = Client)
+    receiver = dict(server = Server)
+    params   = dict()
+
+    def handler(self):
+        return self.server.rooms
 
 class CreateRoom(Event):
     sender   = dict(client = Client)
@@ -36,6 +45,7 @@ class CreateRoom(Event):
         room.members = set(self.sender.user)
         room.msgs = []
         self.server.rooms.append(room)
+        return room
     
 class JoinRoom(Event):
     sender   = dict(client = Client)
@@ -48,6 +58,7 @@ class JoinRoom(Event):
         if self.client.user in self.room:      return "User already member"
 
     def handler(self):
+        self.client.my_rooms.append(self.room)
         self.room.members.append(self.client.user)
 
 class SendMsg(Event):
