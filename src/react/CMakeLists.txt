@@ -134,3 +134,4 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 catkin_add_nosetests(tests/test_model.py)
+catkin_add_nosetests(tests/test_chat.py)

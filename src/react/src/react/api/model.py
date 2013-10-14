@@ -1,12 +1,12 @@
-from metamodel import *
+from .metamodel import *
+from .record_base import *
 
-class Record(object):
+class Record(RecordBase):
     __metaclass__ = RecordMeta
 
-class Machine(object):
-    pass
+class Machine(RecordBase):
+    __metaclass__ = MachineMeta
 
-class Event(object):
+class Event(RecordBase):
     __metaclass__ = EventMeta
-    pass
-    
+

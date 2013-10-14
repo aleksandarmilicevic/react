@@ -1,5 +1,8 @@
 class RecordMeta(type):
     pass
 
-class EventMeta(type):
+class MachineMeta(RecordMeta):
+    pass
+
+class EventMeta(RecordMeta):
     pass
