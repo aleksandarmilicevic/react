@@ -9,9 +9,9 @@ from react.api.model import *
 from react.helpers.test.model_test_helper import ModelTestHelper
 
 class TestModel(unittest.TestCase, ModelTestHelper):
-    def test_record(self): self.assert_record_cls(Record, RecordMeta)
-    def test_record(self): self.assert_record_cls(Machine,  MachineMeta)
-    def test_event(self):  self.assert_record_cls(Event, EventMeta)
+    def test_record(self):  self.assert_record_cls(Record, RecordMeta)
+    def test_machine(self): self.assert_record_cls(Machine,  MachineMeta)
+    def test_event(self):   self.assert_record_cls(Event, EventMeta)
 
 if __name__ == '__main__':
     import rosunit
