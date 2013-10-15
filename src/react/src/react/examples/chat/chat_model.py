@@ -1,17 +1,18 @@
 from react.api.model import *
+from react.api.types import *
 
-User     = record("User",     name    = "str", 
-                              friends = "{str}")
-Msg      = record("Msg",      sender  = "User", 
-                              text    = "str")
-ChatRoom = record("ChatRoom", name    = "str", 
-                              members = "{User}",
-                              msgs    = "[Msg]")
+User     = record("User",     name    = str, 
+                              friends = setof(str))
+Msg      = record("Msg",      sender  = User, 
+                              text    = str)
+ChatRoom = record("ChatRoom", name    = str, 
+                              members = setof(User),
+                              msgs    = listof(Msg))
 
-Client = machine("Client", user       = "User", 
-                           my_rooms   = "[ChatRoom]")
-Server = machine("Server", clients    = "[Client]", 
-                           rooms      = "[ChatRoom]")
+Client = machine("Client", user       = User, 
+                           my_rooms   = listof(ChatRoom))
+Server = machine("Server", clients    = listof(Client),
+                           rooms      = listof(ChatRoom))
 
 class Register(Event):
     sender   = dict(client = Client)

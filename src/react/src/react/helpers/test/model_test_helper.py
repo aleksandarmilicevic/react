@@ -19,6 +19,6 @@ class ModelTestHelper:
         if len(fields) > 0: self.assertEqual(len(fields), len(meta.fields())) 
         for fname in fields:
             self.assertTrue(fname in meta.fields())
-            self.assertEqual(fields[fname], meta.fields()[fname])
+            self.assertEqual(str(fields[fname]), str(meta.fields()[fname]))
 
     def assert_rec_cls(self, *args, **kwargs): self.assert_record_cls(*args, **kwargs)

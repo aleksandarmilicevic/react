@@ -1,4 +1,5 @@
 import react
+from react.api.types import Type
 
 class ReactObjMClass(type):
     def __call__(cls, *args, **kwargs):
@@ -19,7 +20,8 @@ class ReactObjMClass(type):
         elif cls.is_event():   cls.meta_obj = EventMeta(cls)
 
     def fields(cls, **kwargs):
-        cls.meta().fields().update(kwargs)
+        flds = [(k, Type.get(v)) for (k, v) in kwargs.iteritems()]
+        cls.meta().fields().update(flds)
     
 
 class RecordMeta(object):
