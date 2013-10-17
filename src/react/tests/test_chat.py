@@ -33,5 +33,5 @@ class TestChat(unittest.TestCase, ModelTestHelper):
 
 if __name__ == '__main__':
     import rosunit
-    unittest.main()
-    # rosunit.unitrun('react', 'test_chat', TestChat)
+    # unittest.main()
+    rosunit.unitrun('react', 'test_chat', TestChat)

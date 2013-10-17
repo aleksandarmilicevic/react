@@ -45,7 +45,7 @@ class Server(Machine):
 class Register(Event):
     sender   = { "client": Client }
     receiver = { "server": Server }
-    params   = { "name":   str }
+    name     = str
 
     def guard(self):
         if self.name in [user.name for user in User.all]: return "Username taken"
@@ -56,7 +56,6 @@ class Register(Event):
 class ListRooms(Event): 
     sender   = { "client": Client }
     receiver = { "server": Server }
-    params   = {}
 
     def handler(self):
         return self.server.rooms
@@ -64,7 +63,7 @@ class ListRooms(Event):
 class CreateRoom(Event):
     sender   = { "client": Client }
     receiver = { "server": Server }
-    params   = { "name":   str }
+    name     = str
 
     def guard(self):
         if self.client.user is None: return "Not logged in"
