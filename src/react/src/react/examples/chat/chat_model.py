@@ -1,8 +1,7 @@
 from react.api.model import *
 from react.api.types import *
 
-User     = record("User",     name    = str, 
-                              friends = setof(str))
+User     = record("User",     name    = str)
 Msg      = record("Msg",      sender  = User, 
                               text    = str)
 ChatRoom = record("ChatRoom", name    = str, 

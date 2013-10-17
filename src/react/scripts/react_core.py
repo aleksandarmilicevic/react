@@ -1,40 +1,46 @@
 #!/usr/bin/env python
 
 import rospy
+
+import react
+from react import srv
+from react import core
+from react import meta
+from react.core import serialization as ser
 from std_msgs.msg import String
-from react.api.model import *
-from react.msg import *
-from react.srv import *
 
 from react.examples.chat.chat_model import * #TODO: don't hardcode
 
 def event_handler(req):
     #TODO
-    return EventSrvResponse("ok")
+    return react.srv.EventSrvResponse("ok")
 
-def registration_handler(req):
+def reg_handler(req):
+    mname = req.machine_name
+
     #TODO
     print "registration request"
-    print "  machine name: %s" % req.machine_name
+    print "  machine name: %s" % mname
 
-    print "Resolving machine name %s" % req.machine_name
-    machine_cls = eval(req.machine_name) #TODO don't use eval!
+    print "Resolving machine name %s" % mname
+    machine_meta = react.meta.find_machine(mname)
+    machine_cls = machine_meta.cls()
 
-    print "Creating new machine instancd" 
+    print "Creating new machine instance" 
     machine = machine_cls()
 
     print "  machine id: %s" % machine.id()
-
-    resp = RecordMsg(machine.meta().name(), machine.id())
+    
+    resp = ser.serialize_machine(machine)
     print "Sending back resp: %s" % resp
-    return RegisterMachineSrvResponse(resp)
+    return react.srv.RegisterMachineSrvResponse(resp)
 
 def reactcore():
     rospy.init_node('reactcore')
     print "initializing registration service ..."
-    rospy.Service('register_machine', RegisterMachineSrv, registration_handler)
+    rospy.Service(react.core.REG_SRV_NAME, react.srv.RegisterMachineSrv, reg_handler)
     print "initializing events service ..."
-    rospy.Service('events', EventSrv, event_handler)
+    rospy.Service(react.core.EVENT_SRV_NAME, react.srv.EventSrv, event_handler)
     print "done"
     rospy.spin()
 

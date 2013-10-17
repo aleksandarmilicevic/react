@@ -19,6 +19,13 @@ class ReactObj():
     def is_event(cls):   return False
 
     @classmethod
+    def kind(cls):
+        if cls.is_event():     return "event"
+        elif cls.is_machine(): return "machine"
+        elif cls.is_record():  return "record"
+        else:                  return None
+
+    @classmethod
     def meta(target): 
         if isinstance(target, ReactObj):   return type(target).meta()
         elif issubclass(target, ReactObj): return target.meta_obj

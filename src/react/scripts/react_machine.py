@@ -1,22 +1,11 @@
 #!/usr/bin/env python
 
 import sys
-
 import rospy
-from react.srv import *
-from react.msg import *
-from react.examples.chat.chat_model import * #TODO: don't hardcode
+import react
 
-def start_machine(machine_name):
-    print "Requesting machine registration for machine %s" % machine_name
-    reg = 'register_machine'
-    rospy.wait_for_service(reg)
-    try:
-        reg = rospy.ServiceProxy(reg, RegisterMachineSrv)
-        ans = reg(machine_name)
-        print "Received response: %s" % ans
-    except rospy.ServiceException, e:
-        print "Service call failed: %s"%e
+from react import core
+from react.core import node
 
 def usage():
     return "%s <machine_name>"%sys.argv[0]
@@ -24,7 +13,8 @@ def usage():
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         machine_name = str(sys.argv[1])
+        react.core.node.ReactNode(machine_name).start_node()
     else:
         print usage()
         sys.exit(1)
-    start_machine(machine_name)
+

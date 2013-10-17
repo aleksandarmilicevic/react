@@ -15,4 +15,5 @@ class TestModel(unittest.TestCase, ModelTestHelper):
 
 if __name__ == '__main__':
     import rosunit
-    rosunit.unitrun('react', 'test_model', TestModel)
+    # rosunit.unitrun('react', 'test_model', TestModel)
+    unittest.main()
