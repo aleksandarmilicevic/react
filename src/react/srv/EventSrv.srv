@@ -1,3 +1,4 @@
 ObjValMsg event
 ---
-string result
+string    status
+ObjRefMsg result

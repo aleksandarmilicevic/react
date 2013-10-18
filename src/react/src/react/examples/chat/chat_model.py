@@ -36,10 +36,11 @@ class Register(Event):
     name     = str
 
     def guard(self):
-        if self.name in [user.name for user in User.all]: return "Username taken"
+        if self.name in [user.name for user in User.all()]: return "Username taken"
 
     def handler(self):
         self.client.user = User(name = self.name)
+        return self.client.user
 
 class ListRooms(Event): 
     sender   = { "client": Client }

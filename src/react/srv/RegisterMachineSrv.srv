@@ -1,4 +1,5 @@
 string machine_name
 ---
-ObjRefMsg machine
-string    node_name
+ObjRefMsg   this_machine
+string      this_node_name
+ObjRefMsg[] other_machines

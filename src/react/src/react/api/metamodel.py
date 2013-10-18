@@ -24,6 +24,7 @@ class ReactObjMClass(type):
         Intercept class definitions and register defined classes with react.meta
         """
         super(ReactObjMClass, cls).__init__(name, bases, dct)
+
         # create meta
         if cls.is_record():    meta_obj = RecordMeta(cls, dct)
         elif cls.is_machine(): meta_obj = MachineMeta(cls, dct)

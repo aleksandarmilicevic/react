@@ -28,7 +28,7 @@ def deserialize_objref(objref_msg):
         if objref_msg.cls_name == "NoneType": 
             return None
         else:
-            cls = getattr(__builtins__, objref_msg.cls_name)
+            cls = __builtins__[objref_msg.cls_name]
             return cls(objref_msg.value)
     else:
         cls_meta = meta.find(objref_msg.kind, objref_msg.cls_name)
@@ -38,7 +38,7 @@ def deserialize_objval(objval_msg):
     robj = deserialize_objref(objval_msg.ref)
     num_flds = len(objval_msg.field_names)
     for idx in range(num_flds):
-        fname = objvals_msg.field_names[idx]
-        fvalue_ref = objvals_msg.field_values[idx]
+        fname = objval_msg.field_names[idx]
+        fvalue_ref = objval_msg.field_values[idx]
         setattr(robj, fname, deserialize_objref(fvalue_ref))
     return robj
