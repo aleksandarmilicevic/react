@@ -1,18 +1,6 @@
 from react.api.model import *
 from react.api.types import *
 
-# User     = record("User",     name    = str)
-# Msg      = record("Msg",      sender  = User, 
-#                               text    = str)
-# ChatRoom = record("ChatRoom", name    = str, 
-#                               members = setof(User),
-#                               msgs    = listof(Msg))
-
-# Client = machine("Client", user       = User, 
-#                            my_rooms   = listof(ChatRoom))
-# Server = machine("Server", clients    = listof(Client),
-#                            rooms      = listof(ChatRoom))
-
 """
   Records
 """

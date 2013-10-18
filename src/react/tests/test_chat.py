@@ -16,22 +16,44 @@ class TestChat(unittest.TestCase, ModelTestHelper):
         self.assertEqual("client", ev_cls.meta().sender_fld_name())
         self.assertEqual("server", ev_cls.meta().receiver_fld_name())
 
-    def test_msg(self):  self.assert_rec_cls(Msg, RecordMeta, sender="User", text="str")
-    def test_user(self): self.assert_rec_cls(User, RecordMeta, "name")
-    def test_room(self): self.assert_rec_cls(ChatRoom, RecordMeta, "name", "members", "msgs")
-    def test_client(self): self.assert_rec_cls(Client, MachineMeta, "user", "rooms")
-    def test_server(self): self.assert_rec_cls(Server, MachineMeta, "clients", "rooms")
+    def test_msg(self):  
+        self.assert_rec_cls(Msg, RecordMeta, sender="User", text="str")
+        self.assert_obj_field_vals(Msg, sender=None, text="")
+        m = Msg()
+        self.assertEqual("", m.text)
+        self.assertEqual(None, m.sender)
+
+    def test_user(self): 
+        self.assert_rec_cls(User, RecordMeta, "name")
+        self.assert_obj_field_vals(User, name="")
+
+    def test_room(self): 
+        self.assert_rec_cls(ChatRoom, RecordMeta, "name", "members", "msgs")
+        self.assert_obj_field_vals(ChatRoom, name="", members=set(), msgs=list())
+        self.assertEqual(set(), ChatRoom().members)
+        self.assertEqual(list(), ChatRoom().msgs)
+
+    def test_client(self): 
+        self.assert_rec_cls(Client, MachineMeta, "user", "rooms")
+        self.assert_obj_field_vals(Client, user=None, rooms=list())
+    
+    def test_server(self): 
+        self.assert_rec_cls(Server, MachineMeta, "clients", "rooms")
+        self.assert_obj_field_vals(Server, clients=list(), rooms=list())
+
     def test_register(self):
         self.assert_rec_cls(Register, EventMeta, "client", "server", "name")
         self.assert_sender_receiver(Register)
+
     def test_listrooms(self):
         self.assert_rec_cls(ListRooms, EventMeta, "client", "server")
         self.assert_sender_receiver(ListRooms)
+
     def test_createroom(self):
         self.assert_rec_cls(CreateRoom, EventMeta, "client", "server", "name")
         self.assert_sender_receiver(CreateRoom)
 
 if __name__ == '__main__':
     import rosunit
-    # unittest.main()
-    rosunit.unitrun('react', 'test_chat', TestChat)
+    unittest.main()
+    # rosunit.unitrun('react', 'test_chat', TestChat)

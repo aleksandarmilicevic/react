@@ -8,6 +8,8 @@ class ReactObj():
     def __init__(self, **kwargs):
         ReactObj.id_cnt = ReactObj.id_cnt + 1
         self._id = ReactObj.id_cnt
+        for fname, ftype in self.meta().fields().iteritems():
+            setattr(self, fname, ftype.default_value())
 
     @classmethod
     def is_record(cls):  return False

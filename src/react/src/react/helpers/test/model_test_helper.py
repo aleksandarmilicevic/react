@@ -36,3 +36,8 @@ class ModelTestHelper:
             self.assertEqual(str(fields[fname]), str(meta.fields()[fname]))
 
     def assert_record_cls(self, *args, **kwargs): self.assert_rec_cls(*args, **kwargs)
+
+    def assert_obj_field_vals(self, cls, **fld_vals):
+        obj = cls()
+        for fname, fvalue in fld_vals.iteritems():
+            self.assertEqual(fvalue, getattr(obj, fname))

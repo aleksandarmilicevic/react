@@ -44,6 +44,10 @@ class ReactObjMClass(type):
     
 
 class RecordMeta(object):
+    """
+    @attr _cls: type;                        corresponding ReactObj type (class)
+    @attr _fields: dict<str, react.api.Type> dict of fields
+    """
     def __init__(self, cls, dct):
         self._cls = cls
         self._fields = dict()
@@ -69,6 +73,10 @@ class MachineMeta(RecordMeta):
     pass
 
 class EventMeta(RecordMeta):
+    """
+    @attr _sender_fld_name:   str; name of the field pointing to the sender machine
+    @attr _receiver_fld_name: str; name of the field pointing to the receiver machine
+    """
     def __init__(self, *args, **kwargs):
         self._sender_fld_name = None
         self._receiver_fld_name = None
