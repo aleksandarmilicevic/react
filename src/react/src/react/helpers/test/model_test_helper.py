@@ -10,18 +10,17 @@ class ModelTestHelper:
         self.assertEqual(ReactObjMClass, rec_cls.__metaclass__)
 
         # check if rec_cls is registered with react.meta
-        self.assertTrue(isinstance(react.meta._find_in(rec_cls.kind(), rec_cls.__name__),
-                                   meta_cls))
+        self.assertIsInstance(react.meta.find(rec_cls.kind(), rec_cls.__name__), meta_cls)
 
         # check if created obj is registered with react.db
         r = rec_cls()
-        self.assertEqual(rec_cls.meta(), r.meta(), "class and instance meta() different")
-        self.assertEqual(r, react.db._find_in(rec_cls.kind(), r.id()))
+        self.assertEqual(rec_cls.meta(), r.meta(), "class  and instance meta() different")
+        self.assertEqual(r, react.db.find(rec_cls.kind(), r.id()))
 
         # check if appropriate meta class is assigned to both r and rec_cls
         meta = r.meta()
-        self.assertTrue(isinstance(meta, meta_cls), 
-                        "%s is not an instance of %s" % (rec_cls.meta(), meta_cls))
+        self.assertIsInstance(meta, meta_cls,
+                              "%s is not an instance of %s" % (rec_cls.meta(), meta_cls))
         self.assertEqual(rec_cls, meta.obj_type())
         self.assertEqual(rec_cls.__name__, meta.name())
 
@@ -35,9 +34,28 @@ class ModelTestHelper:
             self.assertTrue(fname in meta.fields())
             self.assertEqual(str(fields[fname]), str(meta.fields()[fname]))
 
+        # check_all, check_alias_for
+        self.check_all(rec_cls)
+        self.check_alias_for(rec_cls)
+
     def assert_record_cls(self, *args, **kwargs): self.assert_rec_cls(*args, **kwargs)
 
     def assert_obj_field_vals(self, cls, **fld_vals):
         obj = cls()
         for fname, fvalue in fld_vals.iteritems():
             self.assertEqual(fvalue, getattr(obj, fname))
+
+    def check_all(self, cls):
+        pre = cls.all()
+        obj = cls()
+        post = pre + [obj]
+        self.assertEqual(set(post), set(cls.all()))
+    
+    def check_alias_for(self, cls):
+        obj = cls()
+        pre = cls.all()
+        a = cls.alias_for(obj.id())
+        self.assertEqual(obj.id(), a.id())
+        self.assertNotEqual(id(obj), id(a))
+        self.assertEqual(pre, cls.all())
+        

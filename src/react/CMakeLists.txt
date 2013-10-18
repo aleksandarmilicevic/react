@@ -26,8 +26,8 @@ catkin_python_setup()
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  EventMsg.msg
-  RecordMsg.msg
+  ObjRefMsg.msg
+  ObjValMsg.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -35,6 +35,8 @@ add_service_files(
   FILES
   EventSrv.srv
   RegisterMachineSrv.srv
+  PushSrv.srv
+  NodeDiscoverySrv.srv
 )
 
 ## Generate added messages and services with any dependencies listed here

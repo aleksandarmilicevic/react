@@ -7,8 +7,10 @@ import react
 from react import core
 from react.core import node
 
+from react.examples.chat.chat_model import * #TODO: don't hardcode
+
 def usage():
-    return "%s <machine_name>"%sys.argv[0]
+    return "usage:\n  rosrun react %s <machine_name>" % sys.argv[0].split("/")[-1]
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:

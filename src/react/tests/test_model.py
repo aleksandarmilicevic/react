@@ -14,6 +14,5 @@ class TestModel(unittest.TestCase, ModelTestHelper):
     def test_event(self):   self.assert_record_cls(Event, EventMeta)
 
 if __name__ == '__main__':
-    import rosunit
-    rosunit.unitrun('react', 'test_model', TestModel)
-    # unittest.main()
+    # import rosunit; rosunit.unitrun('react', 'test_model', TestModel)
+    unittest.main()

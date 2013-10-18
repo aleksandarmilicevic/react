@@ -11,13 +11,13 @@ _m1 = copy.deepcopy(_m1_empty)
 def _get_dct_for(kind):
     return _m1[kind]
 
-def _find_in(kind, name): 
+def find(kind, name): 
     dct = _get_dct_for(kind)
     return dct[name]
 
-def find_record(name):   return _find_in("record", name)
-def find_machine(name):  return _find_in("machine", name)
-def find_event(name):    return _find_in("event", name)
+def record(name):   return find("record", name)
+def machine(name):  return find("machine", name)
+def event(name):    return find("event", name)
 
 def _add_to(kind, rmeta): 
     dct = _get_dct_for(kind)

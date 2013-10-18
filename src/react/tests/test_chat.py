@@ -17,43 +17,52 @@ class TestChat(unittest.TestCase, ModelTestHelper):
         self.assertEqual("server", ev_cls.meta().receiver_fld_name())
 
     def test_msg(self):  
+        self.check_all(Msg)
         self.assert_rec_cls(Msg, RecordMeta, sender="User", text="str")
         self.assert_obj_field_vals(Msg, sender=None, text="")
         m = Msg()
         self.assertEqual("", m.text)
-        self.assertEqual(None, m.sender)
+        self.assertIsNone(m.sender)
+        self.check_all(Msg)
 
     def test_user(self): 
+        self.check_all(User)
         self.assert_rec_cls(User, RecordMeta, "name")
         self.assert_obj_field_vals(User, name="")
 
     def test_room(self): 
+        self.check_all(ChatRoom)
         self.assert_rec_cls(ChatRoom, RecordMeta, "name", "members", "msgs")
         self.assert_obj_field_vals(ChatRoom, name="", members=set(), msgs=list())
         self.assertEqual(set(), ChatRoom().members)
         self.assertEqual(list(), ChatRoom().msgs)
 
     def test_client(self): 
+        self.check_all(Client)
         self.assert_rec_cls(Client, MachineMeta, "user", "rooms")
         self.assert_obj_field_vals(Client, user=None, rooms=list())
     
     def test_server(self): 
+        self.check_all(Server)
         self.assert_rec_cls(Server, MachineMeta, "clients", "rooms")
         self.assert_obj_field_vals(Server, clients=list(), rooms=list())
 
     def test_register(self):
+        self.check_all(Register)
         self.assert_rec_cls(Register, EventMeta, "client", "server", "name")
         self.assert_sender_receiver(Register)
 
     def test_listrooms(self):
+        self.check_all(ListRooms)
         self.assert_rec_cls(ListRooms, EventMeta, "client", "server")
         self.assert_sender_receiver(ListRooms)
 
     def test_createroom(self):
+        self.check_all(CreateRoom)
         self.assert_rec_cls(CreateRoom, EventMeta, "client", "server", "name")
         self.assert_sender_receiver(CreateRoom)
 
 if __name__ == '__main__':
-    import rosunit
+    # import rosunit; rosunit.unitrun('react', 'test_chat', TestChat)
     unittest.main()
-    # rosunit.unitrun('react', 'test_chat', TestChat)
+    
