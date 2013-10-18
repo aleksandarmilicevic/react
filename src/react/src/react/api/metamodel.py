@@ -13,7 +13,7 @@ class ReactObjMClass(type):
         Intercept constructor calls and register created instances with react.db
         """
         obj = super(ReactObjMClass, cls).__call__(*args, **kwargs)
-        react.db._add_to(cls.kind(), obj)
+        react.db.add(cls.kind(), obj)
         return obj
 
     # def __new__(meta, name, bases, dct):
@@ -37,7 +37,7 @@ class ReactObjMClass(type):
         cls.meta_obj = meta_obj
 
         # register with m1
-        react.meta._add_to(cls.kind(), cls.meta_obj)
+        react.meta.add(cls.kind(), cls.meta_obj)
 
     def fields(cls, **kwargs):
         flds = [(k, Type.get(v)) for (k, v) in kwargs.iteritems()]

@@ -24,22 +24,28 @@ class ReactNode(object):
         return react.srv.PushSrvResponse("ok")
 
     def start_node(self):
+        """
+          (1) registers this machien with ReactCore (by calling
+              self._register_node()).  That will initialize
+              a ROS node, and also start some services to allow
+              ReactCore to talk to this node directly.
+
+          (2) creates and triggers the Register event from the Chat
+              system model.
+        """
         try:
             self._register_node()
 
-            # send register event (should be triggered by the user)
-            reg_ev_cls = meta.event("Register").cls()
-            ev = reg_ev_cls(
-                sender = self.machine(),
-                name = "aleks"
-                )
-            ev.name = "aleks"
-            ev_service = rospy.ServiceProxy(react.core.EVENT_SRV_NAME, react.srv.EventSrv)
-            ev_msg = ser.serialize_objval(ev)
-            ans = ev_service(ev_msg)
-            print "Received response from EventSrv: %s" % ans
+            # !!!!!! THIS IS JUST AN EXAMPLE, NOT A GENERIC NODE BEHAVIOR !!!!!!!
+            # pick any connected Server node and trigger Register event
+            servers = filter(lambda m: m.meta().name() == "Server", self.other_machines())
+            if len(servers) == 0:
+                print "*** No connected servers found."
+            else:
+                self._trigger_event("Register", receiver=servers[0], name="aleks")
+            # !!!!!! ==================================================== !!!!!!!
 
-            # TODO: read commands from kbd
+            # TODO: allow command imputs from kbd
             rospy.spin()
 
         except rospy.ServiceException, e:
@@ -66,6 +72,18 @@ class ReactNode(object):
         rospy.init_node(self.node_name())
         print "initializing push service"
         rospy.Service(react.core.PUSH_SRV_NAME, react.srv.PushSrv, self.push_handler)
+
+    def _trigger_event(self, event_name, **event_params):
+        # send register event (should be triggered by the user)
+        reg_ev_cls = meta.event(event_name).cls()
+        ev_params = { "sender": self.machine() }
+        ev_params.update(event_params)
+        ev = reg_ev_cls(**ev_params)
+
+        ev_service = rospy.ServiceProxy(react.core.EVENT_SRV_NAME, react.srv.EventSrv)
+        ev_msg = ser.serialize_objval(ev)
+        ans = ev_service(ev_msg)
+        print "Received response from EventSrv: %s" % ans
 
     def _update_other_machines(self, machine_msgs):
         """

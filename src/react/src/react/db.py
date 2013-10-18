@@ -24,12 +24,12 @@ def record(id):   return _records()[id]
 def machine(id):  return _machines()[id]
 def event(id):    return _events()[id]
 
-def _add_to(kind, robj): 
+def add(kind, robj): 
     _m2[kind][robj.id()] = robj
 
-def add_record(robj):   _add_to(_records(), robj)
-def add_machine(robj):  _add_to(_machines(), robj)
-def add_event(robj):    _add_to(_events(), robj)
+def add_record(robj):   add(_records(), robj)
+def add_machine(robj):  add(_machines(), robj)
+def add_event(robj):    add(_events(), robj)
 
 def reset():
     global _m2

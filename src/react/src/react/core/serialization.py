@@ -32,7 +32,7 @@ def deserialize_objref(objref_msg):
             return cls(objref_msg.value)
     else:
         cls_meta = meta.find(objref_msg.kind, objref_msg.cls_name)
-        return cls_meta.cls().alias_for(objref_msg.obj_id)
+        return cls_meta.cls().find_or_new(objref_msg.obj_id)
 
 def deserialize_objval(objval_msg):
     robj = deserialize_objref(objval_msg.ref)

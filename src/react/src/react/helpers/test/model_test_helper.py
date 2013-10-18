@@ -34,9 +34,9 @@ class ModelTestHelper:
             self.assertTrue(fname in meta.fields())
             self.assertEqual(str(fields[fname]), str(meta.fields()[fname]))
 
-        # check_all, check_alias_for
+        # check_all, check_alias_obj
         self.check_all(rec_cls)
-        self.check_alias_for(rec_cls)
+        self.check_alias_obj(rec_cls)
 
     def assert_record_cls(self, *args, **kwargs): self.assert_rec_cls(*args, **kwargs)
 
@@ -51,11 +51,11 @@ class ModelTestHelper:
         post = pre + [obj]
         self.assertEqual(set(post), set(cls.all()))
     
-    def check_alias_for(self, cls):
+    def check_alias_obj(self, cls):
         obj = cls()
         pre = cls.all()
-        a = cls.alias_for(obj.id())
+        a = cls.alias_obj(obj.id())
         self.assertEqual(obj.id(), a.id())
         self.assertNotEqual(id(obj), id(a))
         self.assertEqual(pre, cls.all())
-        
+                

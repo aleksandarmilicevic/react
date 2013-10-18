@@ -84,6 +84,7 @@ def reactcore():
                   react.srv.NodeDiscoverySrv, 
                   get_srv_handler("discover", node_discovery_handler))
     print "done"
+    # TODO: allow command imputs from keyboard
     rospy.spin()
 
 def _get_other_machines(this_machine):

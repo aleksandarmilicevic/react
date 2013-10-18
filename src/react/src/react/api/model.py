@@ -18,7 +18,16 @@ class ReactObj():
             self.set_field(fname, fvalue)
 
     @classmethod
-    def alias_for(cls, id):
+    def find_or_new(cls, id):
+        try:
+            return react.db.find(cls.kind(), id)
+        except Exception, e:
+            obj = cls.alias_obj(id)
+            react.db.add(cls.kind(), obj)
+            return obj        
+
+    @classmethod
+    def alias_obj(cls, id):
         obj = cls.__new__(cls)
         obj._id = id
         obj._init_fields()
@@ -49,7 +58,10 @@ class ReactObj():
 
     @classmethod
     def all(cls): return filter(lambda r: isinstance(r, cls), db.all(cls.kind()))
-        
+
+    @classmethod
+    def find(cls, id): return react.db.find(cls.kind(), id)
+
     def id(self): return self._id
 
     def get_field(self, fname):
