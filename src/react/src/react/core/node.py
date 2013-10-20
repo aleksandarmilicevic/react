@@ -5,6 +5,7 @@ from react.core import serialization as ser
 from react import srv
 from react import msg
 from react import meta
+import thread
 
 class ReactNode(object):
     def __init__(self, machine_name):
@@ -23,6 +24,21 @@ class ReactNode(object):
         print "received: %s" % req
         return react.srv.PushSrvResponse("ok")
 
+    def commandInterface(self):
+        while True:
+            s = raw_input()
+            # format for trigger is trigger,event_name,event_params
+            if s[:8] == 'trigger,':
+                for i in range(8,len(s)):
+                    if s[i] == ',':
+                        event_name = s[8:i]
+                        #event_params_dict = ast.literal_eval(s[i+1:])
+                        commandStr = "self._trigger_event('{1}', {0})".format(s[i+1:],event_name)
+                        print commandStr
+                        eval(commandStr)
+                        break
+            
+    
     def start_node(self):
         """
           (1) registers this machien with ReactCore (by calling
@@ -46,7 +62,8 @@ class ReactNode(object):
             # !!!!!! ==================================================== !!!!!!!
 
             # TODO: allow command imputs from kbd
-            rospy.spin()
+            thread.start_new_thread(self.commandInterface,())
+            thread.start_new_thread(rospy.spin(),())
 
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e

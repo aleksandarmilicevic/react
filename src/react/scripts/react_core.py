@@ -8,6 +8,7 @@ from react import core
 from react import meta
 from react.core import serialization as ser
 from std_msgs.msg import String
+import thread
 
 from react.examples.chat.chat_model import * #TODO: don't hardcode
 
@@ -69,6 +70,13 @@ def node_discovery_handler(req):
     resp = { "other_machines": _get_other_machines_serialized(req.client_machine.obj_id) }
     return react.srv.NodeDiscoverySrvResponse(**resp)
 
+def commandInterface():
+    while True:
+        s = raw_input()
+        if s == 'query db':
+            print "records: {0}".format(react.db._records())
+            print "machines: {0}".format(react.db._machines())
+        
 def reactcore():
     rospy.init_node('reactcore')
     print "initializing registration service ..."
@@ -85,7 +93,12 @@ def reactcore():
                   get_srv_handler("discover", node_discovery_handler))
     print "done"
     # TODO: allow command imputs from keyboard
-    rospy.spin()
+    try:
+        thread.start_new_thread(commandInterface,())
+        thread.start_new_thread(rospy.spin(),())
+    except:
+        print "Error: unable to start thread"
+    
 
 def _get_other_machines(this_machine):
     """
