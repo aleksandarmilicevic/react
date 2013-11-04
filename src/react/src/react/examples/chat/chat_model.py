@@ -6,15 +6,27 @@ from react.api.types import *
 """
 class User(Record):
     name = str
+    def getAttr(self):
+        return {"type":"User","name":self.name}
 
 class Msg(Record):
     sender = User
     text   = str
+    def getAttr(self):
+        return {"type":"Msg","sender":self.sender.getAttr(),"msg":self.text}
 
 class ChatRoom(Record):
     name    = str
     members = setof(User)
     msgs    = listof(Msg)
+    def getAttr(self):
+        memberList = []
+        msgList = []
+        for user in self.members:
+            memberList.append(user.getAttr())
+        for msg in self.msgs:
+            msgList.append(msg.getAttr())
+        return {"type":"ChatRoom","members":memberList,"msgs":msgList}
 
 """
   Machines
@@ -22,10 +34,27 @@ class ChatRoom(Record):
 class Client(Machine):
     user = User
     rooms = listof(ChatRoom)
+    def getAttr(self):
+        roomList = []
+        for room in self.rooms:
+            roomList.append(room.getAttr())
+        if self.user != None:
+            userAttr = self.user.getAttr()
+        else:
+            userAttr = {}
+        return {"type":"Client","user":userAttr,"rooms":roomList}
 
 class Server(Machine):
     clients = listof(Client)
     rooms   = listof(ChatRoom)
+    def getAttr(self):
+        clientList = []
+        roomList = []
+        for client in self.clients:
+            clientList.append(client.getAttr())
+        for room in self.rooms:
+            roomList.append(room.getAttr())
+        return {"type":"Server","Clients":clientList,"rooms":roomList}
 
 """
   Events

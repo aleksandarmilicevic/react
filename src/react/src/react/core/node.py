@@ -6,6 +6,7 @@ from react import srv
 from react import msg
 from react import meta
 import thread
+import ast
 
 class ReactNode(object):
     def __init__(self, machine_name):
@@ -28,15 +29,23 @@ class ReactNode(object):
         while True:
             s = raw_input()
             # format for trigger is trigger,event_name,event_params
+            #import pdb
+            #pdb.set_trace()
             if s[:8] == 'trigger,':
+                flag = False
                 for i in range(8,len(s)):
                     if s[i] == ',':
                         event_name = s[8:i]
-                        #event_params_dict = ast.literal_eval(s[i+1:])
-                        commandStr = "self._trigger_event('{1}', {0})".format(s[i+1:],event_name)
-                        print commandStr
-                        eval(commandStr)
+                        event_params = s[i+1:]
+                        print event_params
+                        print "self._trigger_event('{0}',{1})".format(event_name,event_params)
+                        eval("self._trigger_event('{0}',{1})".format(event_name,event_params))
+                        flag = True
                         break
+                if not flag:
+                    event_name = s[8:]
+                    print "self._trigger_event('{0}')".format(event_name) 
+                    eval("self._trigger_event('{0}')".format(event_name))
             
     
     def start_node(self):
@@ -58,7 +67,8 @@ class ReactNode(object):
             if len(servers) == 0:
                 print "*** No connected servers found."
             else:
-                self._trigger_event("Register", receiver=servers[0], name="aleks")
+                pass
+                #self._trigger_event("Register", receiver=servers[0], name="aleks")
             # !!!!!! ==================================================== !!!!!!!
 
             # TODO: allow command imputs from kbd

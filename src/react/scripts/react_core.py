@@ -74,6 +74,12 @@ def commandInterface():
     while True:
         s = raw_input()
         if s == 'query db':
+            print "records: "
+            for recordID in react.db._records():
+                print str(recordID) + ": " + str(react.db._records()[recordID].getAttr())
+            print "machines: "
+            for machineID in react.db._machines():
+                print str(machineID) + ": " + str(react.db._machines()[machineID].getAttr())
             print "records: {0}".format(react.db._records())
             print "machines: {0}".format(react.db._machines())
         
