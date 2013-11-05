@@ -2,7 +2,7 @@ from .metamodel import *
 
 from react import db
 
-class ReactObj(): 
+class ReactObj():
     __metaclass__ = ReactObjMClass
 
     id_cnt = 0
@@ -17,6 +17,21 @@ class ReactObj():
         for fname, fvalue in kwargs.iteritems():
             self.set_field(fname, fvalue)
 
+    def __str__(self):
+        return "%s(%d)" % (self.meta().name(), self.id())
+
+    def __repr__(self):
+        flds = []
+        for fld_name, fld_type in self.meta().fields().iteritems():
+            val = getattr(self, fld_name)
+            if fld_type.is_primitive():
+                val_str = repr(val)
+            else:
+                val_str = str(val)
+            flds.append("%s: %s" % (fld_name, val_str))
+        fields_str = ", ".join(flds)
+        return "<%s(%d) { %s }>" % (self.meta().name(), self.id(), fields_str)
+
     @classmethod
     def find_or_new(cls, id):
         try:
@@ -24,7 +39,7 @@ class ReactObj():
         except Exception, e:
             obj = cls.alias_obj(id)
             react.db.add(cls.kind(), obj)
-            return obj        
+            return obj
 
     @classmethod
     def alias_obj(cls, id):
@@ -35,11 +50,11 @@ class ReactObj():
 
     @classmethod
     def is_record(cls):  return False
-    
-    @classmethod 
+
+    @classmethod
     def is_machine(cls): return False
-    
-    @classmethod 
+
+    @classmethod
     def is_event(cls):   return False
 
     @classmethod
@@ -50,10 +65,10 @@ class ReactObj():
         else:                  return None
 
     @classmethod
-    def meta(target): 
+    def meta(target):
         if isinstance(target, ReactObj):   return type(target).meta()
         elif issubclass(target, ReactObj): return target.meta_obj
-        else: 
+        else:
             raise RuntimeException("unexpected argument type: %s" % target)
 
     @classmethod
@@ -70,7 +85,7 @@ class ReactObj():
         """
         getattr(self, fname)
 
-    def set_field(self, fname, fvalue):  
+    def set_field(self, fname, fvalue):
         """
         sets the value of field `fname' to `fvalue'
         """
@@ -81,7 +96,7 @@ class ReactObj():
         initializes all fields from self.meta() with default values
         """
         for fname, ftype in self.meta().fields().iteritems():
-            self.set_field(fname, ftype.default_value()) 
+            self.set_field(fname, ftype.default_value())
 
 
 def new_react_cls(__name, __bases, **fields):
@@ -90,15 +105,15 @@ def new_react_cls(__name, __bases, **fields):
     return cls
 
 class Record(ReactObj):
-    @classmethod 
+    @classmethod
     def is_record(cls): return True
 
 class Machine(ReactObj):
-    @classmethod 
+    @classmethod
     def is_machine(cls): return True
 
 class Event(ReactObj):
-    @classmethod 
+    @classmethod
     def is_event(cls): return True
 
     def sender(self):   return self.get_field("sender")
@@ -121,4 +136,4 @@ class Event(ReactObj):
 def record(__name, **fields):  return new_react_cls(__name, (Record,), **fields)
 def machine(__name, **fields): return new_react_cls(__name, (Machine,), **fields)
 def event(__name, **fields):   return new_react_cls(__name, (Event,), **fields)
-    
+

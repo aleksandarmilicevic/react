@@ -2,6 +2,8 @@ import abc
 import operator as op
 import react
 
+primitive_types = (int, bool, str, float)
+
 class Type(object):
     """
     Abstract class.
@@ -28,6 +30,8 @@ class Type(object):
     @abc.abstractmethod
     def default_value(self): pass
 
+    def is_primitive(self): return False
+
     def utypes(self): return [self.column(i) for i in range(self.arity())]
     def domain(self): return self.column(0)
     def range(self):  return self.column(self.arity() - 1)
@@ -42,11 +46,13 @@ class UType(Type):
 
     def __init__(self, cls): self._cls = cls
 
+    def is_primitive(self):  return self.cls() in primitive_types
+
     def cls(self):           return self._cls
     def arity(self):         return 1
     def column(self, idx):   assert idx == 0; return self
     def default_value(self): return None
-    
+
 class ProductType(Type):
     """
     Abstract representation of a product type.
@@ -55,7 +61,7 @@ class ProductType(Type):
                                  don't have to be unary types.
     """
     __metaclass__ = abc.ABCMeta
-    
+
     def __init__(self, *children): self._children = [Type.get(ch) for ch in children]
 
     def children(self):    return self._children
@@ -85,7 +91,7 @@ class RefType(UType):
     """
     def __init__(self, cls): super(RefType, self).__init__(cls)
     def __str__(self):       return self.cls().__name__
-    def default_value(self): 
+    def default_value(self):
         if self.cls() == str:    return ""
         elif self.cls() == int:  return 0
         elif self.cls() == bool: return false
@@ -112,7 +118,7 @@ class SetType(ModType):
 class ListType(ModType):
     """
     A mod type denoting a list of another (wrapped) type
-    """    
+    """
     def __init__(self, sub): super(ListType, self).__init__(sub)
     def __str__(self):       return "list<%s>" % self.sub()
     def default_value(self): return list()
@@ -120,7 +126,7 @@ class ListType(ModType):
 class DictType(ProductType):
     """
     A binary type denoting a dictionary of another two types.
-    
+
     @attr _lhs: Type; key type
     @attr _rhs: Type; value type
     """
