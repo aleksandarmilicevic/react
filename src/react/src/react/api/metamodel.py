@@ -56,10 +56,11 @@ class RecordMeta(object):
         # set fields from dct
         self._iter_dct(dct, self._add_field)
 
-    def name(self):     return self._cls.__name__
-    def cls(self):      return self._cls
-    def obj_type(self): return self.cls()
-    def fields(self):   return self._fields
+    def name(self):        return self._cls.__name__
+    def cls(self):         return self._cls
+    def obj_type(self):    return self.cls()
+    def fields(self):      return self._fields
+    def field(self, name): return self._fields.get(name)
 
     def _iter_dct(self, dct, func):
         # import pdb; pdb.set_trace()
@@ -85,6 +86,8 @@ class EventMeta(RecordMeta):
 
     def sender_fld_name(self):   return self._sender_fld_name
     def receiver_fld_name(self): return self._receiver_fld_name
+    def sender(self):            return self.field(self.sender_fld_name())
+    def receiver(self):          return self.field(self.receiver_fld_name())
 
     def _add_field(self, fname, ftype):
         if fname == "sender" or fname == "receiver" or fname == "params":

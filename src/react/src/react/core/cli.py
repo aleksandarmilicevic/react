@@ -33,18 +33,23 @@ def exe_cmd(cmd_tuple, react_node):
     """
     if cmd_tuple[0] == "trigger":
         ev_params = cmd_tuple[2]
-        ev_params.update({"sender": react_node.machine()})
+        rec_id = cmd_tuple[3]
+        if rec_id is not None: 
+            rec = react.db.machine(rec_id)
+        else:
+            rec = None
+        ev_params.update({"sender": react_node.machine(), "receiver": rec})
         return trigger_event(cmd_tuple[1], **ev_params)
     elif cmd_tuple[0] == "db":
         print "records: "
-        for record in react.db._records().values():
+        for record in react.db.records():
             print "  " + repr(record)
         print ""
         print "machines: "
-        for machine in react.db._machines().values():
+        for machine in react.db.machines():
             print "  " + repr(machine)
     else:
-        raise RuntimeException("unknown command: %s" % cmd[0])
+        raise RuntimeError("unknown command: %s" % cmd[0])
 
 def parse_and_exe(cmd_str, react_node):
     cmd = parse(cmd_str)
@@ -52,6 +57,17 @@ def parse_and_exe(cmd_str, react_node):
 
 def trigger_event(event_name, **event_params):
     ev_cls = meta.event(event_name).cls()
+    if event_params.get("receiver") is None:
+        receiver_cls = ev_cls.meta().receiver().cls()
+        rec_candidates = filter(lambda m: isinstance(m, receiver_cls), react.db.machines())
+        if len(rec_candidates) == 0: 
+            raise RuntimeError("no receiver specified for event %s" % event_name)
+        elif len(rec_candidates) > 1:
+            raise RuntimeError("multiple receiver candidates found for event %s: %s" % (event_name, rec_candidates))
+        else:
+            rec = rec_candidates[0]
+            print "Using implicit receiver: %s" % rec
+            event_params["receiver"] = rec
     ev = ev_cls(**event_params)
 
     ev_service = rospy.ServiceProxy(react.core.EVENT_SRV_NAME, react.srv.EventSrv)

@@ -13,7 +13,7 @@ class Msg(Record):
 
 class ChatRoom(Record):
     name    = str
-    members = setof(User)
+    members = listof(User)
     msgs    = listof(Msg)
 
 """
@@ -59,7 +59,7 @@ class CreateRoom(Event):
 
     def handler(self):
         room = ChatRoom(name = self.name)
-        room.members = set(self.sender.user)
+        room.members = [self.client.user]
         room.msgs = []
         self.server.rooms.append(room)
         return room
