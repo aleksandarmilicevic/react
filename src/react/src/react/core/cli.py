@@ -7,7 +7,7 @@ from react import meta
 from react import srv
 from react import msg
 
-cmd_regex = re.compile(r"(?P<cmd>\w+)(\s+(?P<name>\w+))?(\((?P<params>.*)\))?\s*$")
+cmd_regex = re.compile(r"(?P<cmd>\w+)(\s+(?P<name>\w+))?(\((?P<params>.*)\))?(\s+to\s+@(?P<receiver_id>\d+))?\s*$")
 
 def parse(cmd_str):
     """ @param cmd_str [string]: command to execute """
@@ -20,7 +20,9 @@ def parse(cmd_str):
     if params_str is not None:
         #TODO: unsafe eval
         params = eval('dict(%s)' % params_str)
-    return (cmd, name, params)
+    to = m.group("receiver_id")
+    if to is not None: to = int(to)
+    return (cmd, name, params, to)
 
 def exe_cmd(cmd_tuple, react_node):
     """
