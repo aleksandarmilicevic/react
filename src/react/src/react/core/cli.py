@@ -31,7 +31,7 @@ def exe_cmd(cmd_tuple, react_node):
     @param cmd_tuple[2] [dict]      : parameters
     @param react_node   [ReactNode] : acting node
     """
-    if cmd_tuple[0] == "trigger":
+    if cmd_tuple[0] in ["trigger", "send"]:
         ev_params = cmd_tuple[2]
         rec_id = cmd_tuple[3]
         if rec_id is not None: 
@@ -48,12 +48,19 @@ def exe_cmd(cmd_tuple, react_node):
         print "machines: "
         for machine in react.db.machines():
             print "  " + repr(machine)
+    elif cmd_tuple[0] == "hb" and callable(getattr(react_node, "_send_heartbeat", None)):
+        react_node._send_heartbeat()
     else:
-        raise RuntimeError("unknown command: %s" % cmd[0])
+        cli_error("unknown command: %s" % cmd_tuple[0])
+        # raise RuntimeError("unknown command: %s" % cmd_tuple[0])
 
 def parse_and_exe(cmd_str, react_node):
+    if not cmd_str: return
     cmd = parse(cmd_str)
-    return exe_cmd(cmd, react_node)
+    if cmd is None: 
+        cli_error("invalid syntax: %s" % cmd_str)
+    else: 
+        return exe_cmd(cmd, react_node)
 
 def trigger_event(event_name, **event_params):
     ev_cls = meta.event(event_name).cls()
@@ -73,3 +80,6 @@ def trigger_event(event_name, **event_params):
     ev_service = rospy.ServiceProxy(react.core.EVENT_SRV_NAME, react.srv.EventSrv)
     ev_msg = ser.serialize_objval(ev)
     return ev_service(ev_msg)
+
+def cli_error(msg):
+    print("CLI ERROR: %s" % msg)

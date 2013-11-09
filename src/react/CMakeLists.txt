@@ -37,6 +37,7 @@ add_service_files(
   RegisterMachineSrv.srv
   PushSrv.srv
   NodeDiscoverySrv.srv
+  HeartbeatSrv.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
@@ -137,3 +138,4 @@ include_directories(
 ## Add folders to be run by python nosetests
 catkin_add_nosetests(tests/test_model.py)
 catkin_add_nosetests(tests/test_chat.py)
+catkin_add_nosetests(tests/test_cli.py)

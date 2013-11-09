@@ -2,6 +2,7 @@ import sys
 import rospy
 import react
 from react.core import serialization as ser
+from react.core.scheduler import Scheduler
 from react import srv
 from react import msg
 from react import meta
@@ -9,7 +10,14 @@ from react.core import cli
 import thread
 import ast
 
+
+#########################################################################################
+
 class ReactCore(object):
+    """
+    ROS node for the ReactCore
+    """
+
     def __init__(self):
         self._connected_nodes = dict()
 
@@ -27,6 +35,12 @@ class ReactCore(object):
         rospy.Service(react.core.NODE_DISCOVERY_SRV_NAME,
                       react.srv.NodeDiscoverySrv,
                       self.get_srv_handler("discover", self.node_discovery_handler))
+
+        print "initializing heartbeat service ..."
+        rospy.Service(react.core.HEARTBEAT_SRV_NAME,
+                      react.srv.HeartbeatSrv,
+                      self.get_srv_handler("heartbeat", self.heartbeat_handler))
+
         try:
             thread.start_new_thread(self.commandInterface,())
             thread.start_new_thread(rospy.spin(),())
@@ -87,6 +101,16 @@ class ReactCore(object):
             }
         return react.srv.NodeDiscoverySrvResponse(**resp)
 
+    def heartbeat_handler(self, req):
+        """
+        Handler for the HeartbeatSrv service.
+        """
+        print "Received heartbeat from %s" % req.machine
+        resp = {
+            "ok": True
+            }
+        return react.srv.HeartbeatSrvResponse(**resp)
+
     def get_srv_handler(self, srv_name, func):
         def srv_handler(req):
             print "*** %s *** request received\n%s" % (srv_name, req)
@@ -122,12 +146,19 @@ class ReactCore(object):
 #########################################################################################
 
 class ReactNode(object):
+    """
+    ROS node for React machines
+    """
+
     def __init__(self, machine_name):
         """ @param machine_name: name of the corresponding machine """
         self._machine_name = machine_name
         self._machine = None
         self._node_name = None
         self._other_machines = list()
+        self._scheduler = Scheduler()
+        
+        self._scheduler.every(1000, self._send_heartbeat)
 
     def machine_name(self):   return self._machine_name
     def machine(self):        return self._machine
@@ -196,6 +227,16 @@ class ReactNode(object):
         rospy.init_node(self.node_name())
         print "initializing push service"
         rospy.Service(react.core.PUSH_SRV_NAME, react.srv.PushSrv, self.push_handler)
+
+    def _send_heartbeat(self):
+        """
+        Simply send a heartbeat to ReactCore to indicate that this
+        node is still alive.
+        """
+        print "Sending heartbeat"
+        hb_srv = rospy.ServiceProxy(react.core.HEARTBEAT_SRV_NAME, react.srv.HeartbeatSrv)
+        hb_srv(ser.serialize_objref(self.machine()))
+        
 
     def _update_other_machines(self, machine_msgs):
         """

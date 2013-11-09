@@ -33,8 +33,8 @@ class TestChat(unittest.TestCase, ModelTestHelper):
     def test_room(self): 
         self.check_all(ChatRoom)
         self.assert_rec_cls(ChatRoom, RecordMeta, "name", "members", "msgs")
-        self.assert_obj_field_vals(ChatRoom, name="", members=set(), msgs=list())
-        self.assertEqual(set(), ChatRoom().members)
+        self.assert_obj_field_vals(ChatRoom, name="", members=list(), msgs=list())
+        self.assertEqual(list(), ChatRoom().members)
         self.assertEqual(list(), ChatRoom().msgs)
 
     def test_client(self): 
