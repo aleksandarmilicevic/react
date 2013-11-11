@@ -20,12 +20,15 @@ class ChatRoom(Record):
   Machines
 """
 class Client(Machine):
-    user = User
+    user  = User
     rooms = listof(ChatRoom)
 
 class Server(Machine):
     clients = listof(Client)
     rooms   = listof(ChatRoom)
+
+    def onListRooms(self, event): 
+        print "listing rooms"
 
 """
   Events
