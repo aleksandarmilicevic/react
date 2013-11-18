@@ -158,7 +158,7 @@ class ReactNode(object):
         self._other_machines = list()
         self._scheduler = Scheduler()
         
-        self._scheduler.every(1000, self._send_heartbeat)
+        #self._scheduler.every(1000, self._send_heartbeat)
 
     def machine_name(self):   return self._machine_name
     def machine(self):        return self._machine
@@ -170,11 +170,16 @@ class ReactNode(object):
         return react.srv.PushSrvResponse("ok")
 
     def commandInterface(self):
+        commandList = []
         while True:
+
             s = raw_input()
+            commandList.append(s)
+            print commandList
             ans = cli.parse_and_exe(s, self)
             if ans is not None:
                 print "Received response: %s" % ans
+        curses.endwin()
 
     def start_node(self):
         """
@@ -225,6 +230,8 @@ class ReactNode(object):
         self._update_other_machines(ans.other_machines)
 
         rospy.init_node(self.node_name())
+        #self._scheduler.every(1000, self._send_heartbeat)
+        self._scheduler.at(1,49,0, self._send_heartbeat)
         print "initializing push service"
         rospy.Service(react.core.PUSH_SRV_NAME, react.srv.PushSrv, self.push_handler)
 
