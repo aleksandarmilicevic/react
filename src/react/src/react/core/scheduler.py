@@ -13,18 +13,19 @@ class Scheduler(object):
     def __init__(self):
         self.timers = []                    
     
-    def every(self, millis, task):
+    def every(self, sec, task):
         """
         Registers the given callable `task' to be called (invoked)
-        every `millis' milliseconds.
+        every `sec' seconds.
 
-        @param millis [int]      - time interval
+        @param sec [int]      - time interval
         @param task   [Callable] - timer task to call every `millis' milliseconds
         """
         def callback(event):
             task()
 
-        rospy.Timer(rospy.Duration(millis/1000.0),callback)
+        timer = rospy.Timer(rospy.Duration(sec),callback)
+        self.timers.append((task,timer))
             
     
     def at(self, hour, minute, second, task):
@@ -45,7 +46,7 @@ class Scheduler(object):
         currentSec = 60*60*current[0]+60*current[1]+current[2]
         def callback(event):
             task()
-            self.every(24*60*60*1000,task)
+            self.every(24*60*60,task)
             
         if sec >= currentSec:
             timer = rospy.Timer(rospy.Duration(sec-currentSec),callback)
