@@ -1,12 +1,13 @@
 import react
 from react.api import model
+from react import db
 from react import msg
 from react import meta
 
 def serialize_objref(robj):
     if isinstance(robj, react.api.model.ReactObj):
-        return react.msg.ObjRefMsg(kind      = robj.meta().cls().kind(), 
-                                   cls_name  = robj.meta().name(), 
+        return react.msg.ObjRefMsg(kind      = robj.meta().cls().kind(),
+                                   cls_name  = robj.meta().name(),
                                    obj_id    = robj.id(),
                                    value     = "")
     else:
@@ -25,7 +26,7 @@ def serialize_objval(robj):
 
 def deserialize_objref(objref_msg):
     if objref_msg.kind == "primitive":
-        if objref_msg.cls_name == "NoneType": 
+        if objref_msg.cls_name == "NoneType":
             return None
         else:
             cls = __builtins__[objref_msg.cls_name]
@@ -33,6 +34,9 @@ def deserialize_objref(objref_msg):
     else:
         cls_meta = meta.find(objref_msg.kind, objref_msg.cls_name)
         return cls_meta.cls().find_or_new(objref_msg.obj_id)
+
+def deserialize_existing(objref_msg):
+    return db.try_find(objref_msg.kind, objref_msg.obj_id)
 
 def deserialize_objval(objval_msg):
     robj = deserialize_objref(objval_msg.ref)

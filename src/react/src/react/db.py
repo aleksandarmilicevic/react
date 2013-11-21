@@ -17,14 +17,17 @@ def records():  return _records().values()
 def machines(): return _machines().values()
 def events():   return _events().values()
 
-def find(kind, id): 
+def find(kind, id):
     return _m2[kind][id]
+
+def try_find(kind, id):
+    return _m2[kind].get(id)
 
 def record(id):   return _records()[id]
 def machine(id):  return _machines()[id]
 def event(id):    return _events()[id]
 
-def add(kind, robj): 
+def add(kind, robj):
     _m2[kind][robj.id()] = robj
 
 def add_record(robj):   add(_records(), robj)

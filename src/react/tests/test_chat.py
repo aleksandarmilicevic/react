@@ -25,7 +25,7 @@ class TestChat(unittest.TestCase, ModelTestHelper, ListenerHelper):
         self.assert_obj_field_vals(Msg, sender=None, text="")
         self.unreg_lstner()
 
-        acc_num = len(self.accesses) 
+        acc_num = len(self.accesses)
         self.assertSetEqual(set(["sender", "text"]), set(self.read_fld_names()))
 
         m = Msg()
@@ -61,8 +61,8 @@ class TestChat(unittest.TestCase, ModelTestHelper, ListenerHelper):
 
     def test_server(self):
         self.check_all(Server)
-        self.assert_rec_cls(Server, MachineMeta, "clients", "rooms")
-        self.assert_obj_field_vals(Server, clients=list(), rooms=list())
+        self.assert_rec_cls(Server, MachineMeta, "rooms")
+        self.assert_obj_field_vals(Server, rooms=list())
 
     def test_register(self):
         self.check_all(Register)

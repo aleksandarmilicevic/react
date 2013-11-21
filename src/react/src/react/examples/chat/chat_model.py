@@ -24,10 +24,9 @@ class Client(Machine):
     rooms = listof(ChatRoom)
 
 class Server(Machine):
-    clients = listof(Client)
     rooms   = listof(ChatRoom)
 
-    def onListRooms(self, event): 
+    def onListRooms(self, event):
         print "listing rooms"
 
 """
@@ -68,9 +67,9 @@ class CreateRoom(Event):
         return room
 
 class JoinRoom(Event):
-    sender   = dict(client = Client)
-    receiver = dict(server = Server)
-    params   = dict(room   = ChatRoom)
+    sender   = { "client": Client }
+    receiver = { "server": Server }
+    params   = { "room":   ChatRoom }
 
     def guard(self):
         if self.client.user is None:           return "Not logged in"
@@ -82,10 +81,10 @@ class JoinRoom(Event):
         self.room.members.append(self.client.user)
 
 class SendMsg(Event):
-    sender   = dict(client = Client)
-    receiver = dict(server = Server)
-    params   = dict(msg    = str,
-                    room   = ChatRoom)
+    sender   = { "client": Client }
+    receiver = { "server": Server }
+    params   = { "msg":    str,
+                 "room":   ChatRoom }
 
     def guard(self):
         if self.client is None:               return "Not logged in"

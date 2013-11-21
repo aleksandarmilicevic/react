@@ -80,13 +80,10 @@ class ReactObj():
 
     @classmethod
     def attr_access_listeners(cls):          return copy.copy(cls._attr_access_listeners)
-
     @classmethod
     def add_access_listener(cls, lstner):    cls._attr_access_listeners.append(lstner)
-
     @classmethod
     def remove_access_listener(cls, lstner): cls._attr_access_listeners.remove(lstner)
-
     @classmethod
     def notify_listeners(cls, *args):
         for lstner in cls.attr_access_listeners():

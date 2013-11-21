@@ -28,6 +28,7 @@ add_message_files(
   FILES
   ObjRefMsg.msg
   ObjValMsg.msg
+  FldUpdateMsg.msg
 )
 
 ## Generate services in the 'srv' folder
