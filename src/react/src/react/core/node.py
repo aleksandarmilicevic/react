@@ -230,8 +230,8 @@ class ReactNode(object):
         self._update_other_machines(ans.other_machines)
 
         rospy.init_node(self.node_name())
-        #self._scheduler.every(1000, self._send_heartbeat)
-        self._scheduler.at(1,49,0, self._send_heartbeat)
+        self._scheduler.every(1, self._send_heartbeat)
+        #self._scheduler.at(15,47,30, self._send_heartbeat)
         print "initializing push service"
         rospy.Service(react.core.PUSH_SRV_NAME, react.srv.PushSrv, self.push_handler)
 
