@@ -87,14 +87,23 @@ class ReactObj():
     @classmethod
     def remove_access_listener(cls, lstner): cls._attr_access_listeners.remove(lstner)
 
+    @classmethod
+    def notify_listeners(cls, *args):
+        for lstner in cls.attr_access_listeners():
+            lstner(*args)
 
     def __getattribute__(self, name):
         fld_names = object.__getattribute__(self, "meta")().fields().keys()
         if name in fld_names:
-            for lstner in ReactObj.attr_access_listeners():
-                lstner(self, name)
+            ReactObj.notify_listeners("read", self, name)
         value = object.__getattribute__(self, name)
         return value
+
+    def __setattr__(self, name, value):
+        fld_names = object.__getattribute__(self, "meta")().fields().keys()
+        if name in fld_names:
+            ReactObj.notify_listeners("write", self, name, value)
+        object.__setattr__(self, name, value)
 
     def id(self): return self._id
 

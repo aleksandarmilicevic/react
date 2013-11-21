@@ -16,8 +16,8 @@ class TestChat(unittest.TestCase, ModelTestHelper):
         self.assertEqual("client", ev_cls.meta().sender_fld_name())
         self.assertEqual("server", ev_cls.meta().receiver_fld_name())
 
-    def lstner(self, obj, fld_name):
-        self.accesses.append((obj, fld_name))
+    def lstner(self, *args):
+        self.accesses.append(args)
 
     def reg_lstner(self):
         self.accesses = []
@@ -26,8 +26,14 @@ class TestChat(unittest.TestCase, ModelTestHelper):
     def unreg_lstner(self):
         ReactObj.remove_access_listener(self.lstner)
 
-    def accessed_fld_names(self):
-        return map(lambda x: x[1], self.accesses)
+    def filter_accesses(self, col, val): return filter(lambda t: t[col] == val, self.accesses)
+    def read_accesses(self):   return self.filter_accesses(0, "read")
+    def write_accesses(self):  return self.filter_accesses(0, "write")
+
+    @staticmethod
+    def select_col(col, lst):  return map(lambda x: x[col], lst)
+    def read_fld_names(self):  return self.select_col(2, self.read_accesses())
+    def write_fld_names(self): return self.select_col(2, self.write_accesses())
 
     def test_msg(self):
         self.check_all(Msg)
@@ -37,8 +43,8 @@ class TestChat(unittest.TestCase, ModelTestHelper):
         self.assert_obj_field_vals(Msg, sender=None, text="")
         self.unreg_lstner()
 
-        self.assertEqual(2, len(self.accesses))
-        self.assertSetEqual(set(["sender", "text"]), set(self.accessed_fld_names()))
+        acc_num = len(self.accesses) 
+        self.assertSetEqual(set(["sender", "text"]), set(self.read_fld_names()))
 
         m = Msg()
         self.assertEqual("", m.text)
@@ -46,7 +52,13 @@ class TestChat(unittest.TestCase, ModelTestHelper):
         self.check_all(Msg)
 
         # test that unreg worked, ie no more accesses were added
-        self.assertEqual(2, len(self.accesses))
+        self.assertEqual(acc_num, len(self.accesses))
+
+        self.reg_lstner()
+        m.text = "hi there"
+        self.unreg_lstner()
+
+        self.assertEqual(["text"], self.write_fld_names())
 
     def test_user(self):
         self.check_all(User)
