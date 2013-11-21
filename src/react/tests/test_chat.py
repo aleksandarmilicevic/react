@@ -10,30 +10,12 @@ from react.examples.chat.chat_model import *
 from react.api.model import *
 from react.api.metamodel import *
 from react.helpers.test.model_test_helper import ModelTestHelper
+from react.helpers.listener_helper import ListenerHelper
 
-class TestChat(unittest.TestCase, ModelTestHelper):
+class TestChat(unittest.TestCase, ModelTestHelper, ListenerHelper):
     def assert_sender_receiver(self, ev_cls):
         self.assertEqual("client", ev_cls.meta().sender_fld_name())
         self.assertEqual("server", ev_cls.meta().receiver_fld_name())
-
-    def lstner(self, *args):
-        self.accesses.append(args)
-
-    def reg_lstner(self):
-        self.accesses = []
-        ReactObj.add_access_listener(self.lstner)
-
-    def unreg_lstner(self):
-        ReactObj.remove_access_listener(self.lstner)
-
-    def filter_accesses(self, col, val): return filter(lambda t: t[col] == val, self.accesses)
-    def read_accesses(self):   return self.filter_accesses(0, "read")
-    def write_accesses(self):  return self.filter_accesses(0, "write")
-
-    @staticmethod
-    def select_col(col, lst):  return map(lambda x: x[col], lst)
-    def read_fld_names(self):  return self.select_col(2, self.read_accesses())
-    def write_fld_names(self): return self.select_col(2, self.write_accesses())
 
     def test_msg(self):
         self.check_all(Msg)
