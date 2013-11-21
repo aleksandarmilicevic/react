@@ -1,18 +1,19 @@
+import copy
 from .metamodel import *
-
 from react import db
 
 class ReactObj():
     __metaclass__ = ReactObjMClass
 
-    id_cnt = 0
+    _id_cnt = 0
+    _attr_access_listeners = []
 
     def __init__(self, **kwargs):
         """
         @param **kwargs dict<str, object>; initial field values
         """
-        ReactObj.id_cnt = ReactObj.id_cnt + 1
-        self._id = ReactObj.id_cnt
+        ReactObj._id_cnt = ReactObj._id_cnt + 1
+        self._id = ReactObj._id_cnt
         self._init_fields()
         for fname, fvalue in kwargs.iteritems():
             self.set_field(fname, fvalue)
@@ -77,6 +78,24 @@ class ReactObj():
     @classmethod
     def find(cls, id): return react.db.find(cls.kind(), id)
 
+    @classmethod
+    def attr_access_listeners(cls):          return copy.copy(cls._attr_access_listeners)
+
+    @classmethod
+    def add_access_listener(cls, lstner):    cls._attr_access_listeners.append(lstner)
+
+    @classmethod
+    def remove_access_listener(cls, lstner): cls._attr_access_listeners.remove(lstner)
+
+
+    def __getattribute__(self, name):
+        fld_names = object.__getattribute__(self, "meta")().fields().keys()
+        if name in fld_names:
+            for lstner in ReactObj.attr_access_listeners():
+                lstner(self, name)
+        value = object.__getattribute__(self, name)
+        return value
+
     def id(self): return self._id
 
     def get_field(self, fname):
@@ -136,4 +155,3 @@ class Event(ReactObj):
 def record(__name, **fields):  return new_react_cls(__name, (Record,), **fields)
 def machine(__name, **fields): return new_react_cls(__name, (Machine,), **fields)
 def event(__name, **fields):   return new_react_cls(__name, (Event,), **fields)
-

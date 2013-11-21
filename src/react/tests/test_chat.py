@@ -7,8 +7,8 @@ import unittest
 import react
 
 from react.examples.chat.chat_model import *
-from react.api.model import * 
-from react.api.metamodel import * 
+from react.api.model import *
+from react.api.metamodel import *
 from react.helpers.test.model_test_helper import ModelTestHelper
 
 class TestChat(unittest.TestCase, ModelTestHelper):
@@ -16,33 +16,56 @@ class TestChat(unittest.TestCase, ModelTestHelper):
         self.assertEqual("client", ev_cls.meta().sender_fld_name())
         self.assertEqual("server", ev_cls.meta().receiver_fld_name())
 
-    def test_msg(self):  
+    def lstner(self, obj, fld_name):
+        self.accesses.append((obj, fld_name))
+
+    def reg_lstner(self):
+        self.accesses = []
+        ReactObj.add_access_listener(self.lstner)
+
+    def unreg_lstner(self):
+        ReactObj.remove_access_listener(self.lstner)
+
+    def accessed_fld_names(self):
+        return map(lambda x: x[1], self.accesses)
+
+    def test_msg(self):
         self.check_all(Msg)
         self.assert_rec_cls(Msg, RecordMeta, sender="User", text="str")
+
+        self.reg_lstner()
         self.assert_obj_field_vals(Msg, sender=None, text="")
+        self.unreg_lstner()
+
+        self.assertEqual(2, len(self.accesses))
+        self.assertSetEqual(set(["sender", "text"]), set(self.accessed_fld_names()))
+
         m = Msg()
         self.assertEqual("", m.text)
         self.assertIsNone(m.sender)
         self.check_all(Msg)
 
-    def test_user(self): 
+        # test that unreg worked, ie no more accesses were added
+        self.assertEqual(2, len(self.accesses))
+
+    def test_user(self):
         self.check_all(User)
         self.assert_rec_cls(User, RecordMeta, "name")
         self.assert_obj_field_vals(User, name="")
 
-    def test_room(self): 
+    def test_room(self):
         self.check_all(ChatRoom)
         self.assert_rec_cls(ChatRoom, RecordMeta, "name", "members", "msgs")
         self.assert_obj_field_vals(ChatRoom, name="", members=list(), msgs=list())
         self.assertEqual(list(), ChatRoom().members)
         self.assertEqual(list(), ChatRoom().msgs)
 
-    def test_client(self): 
+    def test_client(self):
         self.check_all(Client)
         self.assert_rec_cls(Client, MachineMeta, "user", "rooms")
         self.assert_obj_field_vals(Client, user=None, rooms=list())
-    
-    def test_server(self): 
+
+    def test_server(self):
         self.check_all(Server)
         self.assert_rec_cls(Server, MachineMeta, "clients", "rooms")
         self.assert_obj_field_vals(Server, clients=list(), rooms=list())
@@ -65,4 +88,4 @@ class TestChat(unittest.TestCase, ModelTestHelper):
 if __name__ == '__main__':
     # import rosunit; rosunit.unitrun('react', 'test_chat', TestChat)
     unittest.main()
-    
+
