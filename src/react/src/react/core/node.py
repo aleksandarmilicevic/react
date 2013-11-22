@@ -2,9 +2,10 @@ import copy
 import rospy
 import react
 import sys
-from react import srv
-from react import msg
+from react import conf
 from react import meta
+from react import msg
+from react import srv
 from react.core import serialization as ser
 from react.core.scheduler import Scheduler
 from react.core import cli
@@ -20,6 +21,16 @@ def node_name(machine):
 def push_srv_name(machine):
     return "%s_%s" % (react.core.PUSH_SRV_NAME, node_name(machine))
 
+def in_thread(fun, opt):
+    if opt == conf.E_THR_OPT.FALSE:
+        pass
+    elif opt == conf.E_THR_OPT.NEW_THR:
+        thread.start_new_thread(fun, ())
+    elif opt == conf.E_THR_OPT.MAIN_THR:
+        fun()
+    else:
+        raise StandardError("unrecognized thread option %s" % opt)
+
 class ReactCore(object, ListenerHelper):
     """
     ROS node for the ReactCore
@@ -30,36 +41,35 @@ class ReactCore(object, ListenerHelper):
 
     def start_core(self):
         rospy.init_node('reactcore')
-        print "initializing registration service ..."
+        conf.log("initializing registration service ...")
         rospy.Service(react.core.REG_SRV_NAME,
                       react.srv.RegisterMachineSrv,
                       self.get_srv_handler("registration", self.reg_handler))
-        print "initializing events service ..."
+        conf.log("initializing events service ...")
         rospy.Service(react.core.EVENT_SRV_NAME,
                       react.srv.EventSrv,
                       self.get_srv_handler("event", self.event_handler))
-        print "initializing node discovery service ..."
+        conf.log("initializing node discovery service ...")
         rospy.Service(react.core.NODE_DISCOVERY_SRV_NAME,
                       react.srv.NodeDiscoverySrv,
                       self.get_srv_handler("discover", self.node_discovery_handler))
-        print "initializing heartbeat service ..."
+        conf.log("initializing heartbeat service ...")
         rospy.Service(react.core.HEARTBEAT_SRV_NAME,
                       react.srv.HeartbeatSrv,
                       self.get_srv_handler("heartbeat", self.heartbeat_handler, False))
 
         try:
-            thread.start_new_thread(self.commandInterface, ())
-            rospy.spin()
-            # thread.start_new_thread(rospy.spin(), ())
+            in_thread(self.commandInterface, conf.cli)
+            in_thread(rospy.spin, conf.rospy_spin)
         except:
-            print "Error: unable to start thread"
+            conf.error("Error: unable to start thread")
 
     def commandInterface(self):
         while True:
             s = raw_input()
             ans = cli.parse_and_exe(s, self)
             if ans is not None:
-                print "Received response: %s" % ans
+                conf.debug("Received response: %s", ans)
 
     def event_handler(self, req):
         """
@@ -92,7 +102,6 @@ class ReactCore(object, ListenerHelper):
         machine_meta = react.meta.machine(mname)
         machine_cls = machine_meta.cls()
 
-        print "Creating new machine instance"
         machine = machine_cls()
         self._connected_nodes[machine.id()] = machine
 
@@ -116,7 +125,7 @@ class ReactCore(object, ListenerHelper):
         """
         Handler for the HeartbeatSrv service.
         """
-        #print "Received heartbeat from %s" % req.machine
+        conf.trace("Received heartbeat from %s", req.machine)
         resp = {
             "ok": True
             }
@@ -124,10 +133,10 @@ class ReactCore(object, ListenerHelper):
 
     def get_srv_handler(self, srv_name, func, log=True):
         def srv_handler(req):
-            if log: print "*** %s *** request received\n%s" % (srv_name, req)
+            if log: conf.debug("*** %s *** request received\n%s", srv_name, req)
             resp = func(req)
-            if log: print "Sending back resp:\n%s" % resp
-            if log: print "--------------------------\n"
+            if log: conf.debug("Sending back resp:\n%s", resp)
+            if log: conf.debug("--------------------------\n")
             return resp
         return srv_handler
 
@@ -187,7 +196,6 @@ class ReactNode(object):
     def other_machines(self): return self._other_machines
 
     def push_handler(self, req):
-        # print "received: %s" % req
         updates = req.field_updates
         changed = True
         while len(updates) > 0 and changed:
@@ -200,7 +208,7 @@ class ReactNode(object):
                     updates.remove(fld_update)
                     val = ser.deserialize_objref(fld_update.field_value)
                     obj.set_field(fname, val)
-                    print "updated %s.%s = %s" % (obj, fname, val)
+                    conf.debug("updated %s.%s = %s", obj, fname, val)
         return react.srv.PushSrvResponse("ok")
 
     def commandInterface(self):
@@ -209,8 +217,6 @@ class ReactNode(object):
             s = raw_input()
             commandList.append(s)
             ans = cli.parse_and_exe(s, self)
-            if ans is not None:
-                print "Received response: %s" % ans
         curses.endwin()
 
     def start_node(self):
@@ -225,12 +231,12 @@ class ReactNode(object):
         """
         try:
             self._register_node()
-            thread.start_new_thread(self.commandInterface, ())
-            rospy.spin()
-            # thread.start_new_thread(rospy.spin(), ())      
+            in_thread(self.commandInterface, conf.cli)
+            in_thread(rospy.spin, conf.rospy_spin)
+            # thread.start_new_thread(rospy.spin, ())
 
         except rospy.ServiceException, e:
-            print "Service call failed: %s" % e
+            conf.error("Service call failed: %s", e)
 
     def my_push_srv_name(self):
         return push_srv_name(self.machine())
@@ -243,11 +249,11 @@ class ReactNode(object):
         PushSrv service with the same name.
         """
         mname = self.machine_name()
-        print "Requesting machine registration for machine %s" % mname
+        conf.log("Requesting machine registration for machine %s", mname)
         rospy.wait_for_service(react.core.REG_SRV_NAME)
         reg_srv = rospy.ServiceProxy(react.core.REG_SRV_NAME, react.srv.RegisterMachineSrv)
         ans = reg_srv(mname)
-        print "Received response: %s" % ans
+        conf.debug("Received response: %s", ans)
         self._machine = ser.deserialize_objref(ans.this_machine)
         self._node_name = ans.this_node_name
         self._update_other_machines(ans.other_machines)
@@ -255,7 +261,7 @@ class ReactNode(object):
         rospy.init_node(self.node_name())
         self._scheduler.every(1, self._send_heartbeat)
         #self._scheduler.at(15,47,30, self._send_heartbeat)
-        print "initializing push service"
+        conf.log("initializing push service")
         rospy.Service(self.my_push_srv_name(), react.srv.PushSrv, self.push_handler)
 
         if hasattr(self.machine(), "on_start"):
@@ -266,7 +272,7 @@ class ReactNode(object):
         Simply send a heartbeat to ReactCore to indicate that this
         node is still alive.
         """
-        # print "Sending heartbeat"
+        conf.trace("Sending heartbeat")
         hb_srv = rospy.ServiceProxy(react.core.HEARTBEAT_SRV_NAME, react.srv.HeartbeatSrv)
         hb_srv(ser.serialize_objref(self.machine()))
 
