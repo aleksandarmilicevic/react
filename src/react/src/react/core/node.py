@@ -42,15 +42,15 @@ class ReactCore(object, ListenerHelper):
         rospy.Service(react.core.NODE_DISCOVERY_SRV_NAME,
                       react.srv.NodeDiscoverySrv,
                       self.get_srv_handler("discover", self.node_discovery_handler))
-
         print "initializing heartbeat service ..."
         rospy.Service(react.core.HEARTBEAT_SRV_NAME,
                       react.srv.HeartbeatSrv,
                       self.get_srv_handler("heartbeat", self.heartbeat_handler, False))
 
         try:
-            thread.start_new_thread(self.commandInterface,())
-            thread.start_new_thread(rospy.spin(),())
+            thread.start_new_thread(self.commandInterface, ())
+            rospy.spin()
+            # thread.start_new_thread(rospy.spin(), ())
         except:
             print "Error: unable to start thread"
 
@@ -225,20 +225,9 @@ class ReactNode(object):
         """
         try:
             self._register_node()
-
-            # !!!!!! THIS IS JUST AN EXAMPLE, NOT A GENERIC NODE BEHAVIOR !!!!!!!
-            # pick any connected Server node and trigger Register event
-            servers = filter(lambda m: m.meta().name() == "Server", self.other_machines())
-            if len(servers) == 0:
-                print "*** No connected servers found."
-            else:
-                pass
-                #self._trigger_event("Register", receiver=servers[0], name="aleks")
-            # !!!!!! ==================================================== !!!!!!!
-
-            # TODO: allow command imputs from kbd
-            thread.start_new_thread(self.commandInterface,())
-            thread.start_new_thread(rospy.spin(),())
+            thread.start_new_thread(self.commandInterface, ())
+            rospy.spin()
+            # thread.start_new_thread(rospy.spin(), ())      
 
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e
@@ -268,6 +257,9 @@ class ReactNode(object):
         #self._scheduler.at(15,47,30, self._send_heartbeat)
         print "initializing push service"
         rospy.Service(self.my_push_srv_name(), react.srv.PushSrv, self.push_handler)
+
+        if hasattr(self.machine(), "on_start"):
+            self.machine().on_start()
 
     def _send_heartbeat(self):
         """
