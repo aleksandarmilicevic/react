@@ -14,6 +14,7 @@ E_LOGGER  = enum(STDOUT=_to_stdout, NULL=_to_null, PREPEND=curry(_prepend))
 
 rospy_spin = E_THR_OPT.MAIN_THR
 cli        = E_THR_OPT.NEW_THR
+heartbeat  = True
 log        = E_LOGGER.STDOUT
 debug      = E_LOGGER.STDOUT
 trace      = E_LOGGER.NULL

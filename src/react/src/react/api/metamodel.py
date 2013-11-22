@@ -1,3 +1,4 @@
+import copy
 import react
 from react import meta
 from react import db
@@ -63,7 +64,6 @@ class RecordMeta(object):
     def field(self, name): return self._fields.get(name)
 
     def _iter_dct(self, dct, func):
-        # import pdb; pdb.set_trace()
         for fname, ftype in dct.iteritems():
             if (not fname.startswith("__")) and (not is_func_type(ftype)):
                 func(fname, ftype)
@@ -72,7 +72,27 @@ class RecordMeta(object):
         self._fields[fname] = Type.get(ftype)
 
 class MachineMeta(RecordMeta):
-    pass
+    def __init__(self, cls, dct):
+        super(MachineMeta, self).__init__(cls, dct)
+        self._every_events = []
+        self._extract_timer_events(dct)
+
+    def timer_events(self): return copy.copy(self._every_events)
+
+    @classmethod
+    def _parse_time_in_sec(cls, time_str):
+        try: 
+            return int(time_str)
+        except ValueError:
+            if time_str.endswith('ms'): return cls._parse_time_in_sec(time_str[0:-2]) / 1000
+            elif time_str.endswith('s'): return cls._parse_time_in_sec(time_str[0:-1])
+            else: raise ValueError()                
+
+    def _extract_timer_events(self, dct):
+        for fname, ftype in dct.iteritems():
+            if fname.startswith("every_") and is_func_type(ftype):
+                period = self._parse_time_in_sec(fname[6:])
+                self._every_events.append((fname, period))
 
 class EventMeta(RecordMeta):
     """

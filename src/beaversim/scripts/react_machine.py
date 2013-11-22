@@ -10,7 +10,8 @@ from react.core import node
 import beaversim.gui
 from beaversim.model import *
 
-conf.debug = conf.E_LOGGER.NULL
+#conf.debug = conf.E_LOGGER.NULL
+conf.heartbeat = False
 
 def usage():
     return "usage:\n  rosrun beaversim %s <machine_name>" % sys.argv[0].split("/")[-1]
@@ -21,7 +22,7 @@ if __name__ == "__main__":
 
         if machine_name == "BeaverSim":
             conf.cli = conf.E_THR_OPT.FALSE
-            conf.log = conf.E_LOGGER.NULL
+            #conf.log = conf.E_LOGGER.NULL
 
         react.core.node.ReactNode(machine_name).start_node()
 

@@ -43,7 +43,7 @@ class ModelTestHelper:
     def assert_obj_field_vals(self, cls, **fld_vals):
         obj = cls()
         for fname, fvalue in fld_vals.iteritems():
-            self.assertEqual(fvalue, getattr(obj, fname))
+            self.assertEqual(fvalue, getattr(obj, fname).unwrap())
 
     def check_all(self, cls):
         pre = cls.all()

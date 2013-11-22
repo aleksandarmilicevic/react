@@ -30,6 +30,8 @@ class Type(object):
     @abc.abstractmethod
     def default_value(self): pass
 
+    def is_unary(self):     return self.arity() == 1
+    def is_scalar(self):    return True
     def is_primitive(self): return False
 
     def utypes(self): return [self.column(i) for i in range(self.arity())]
@@ -68,6 +70,7 @@ class ProductType(Type):
     def arity(self):       return sum([ch.arity() for ch in self.children()])
     def utypes(self):      return reduce(op.add, [ch.utypes() for ch in self.children()])
     def column(self, idx): return self.utypes()[idx]
+    def is_scalar(self):   return False
 
 class ModType(Type):
     """
@@ -92,10 +95,11 @@ class RefType(UType):
     def __init__(self, cls): super(RefType, self).__init__(cls)
     def __str__(self):       return self.cls().__name__
     def default_value(self):
-        if self.cls() == str:    return ""
-        elif self.cls() == int:  return 0
-        elif self.cls() == bool: return false
-        else:                    return None
+        if self.cls() == str:     return ""
+        elif self.cls() == int:   return 0
+        elif self.cls() == float: return 0.0
+        elif self.cls() == bool:  return false
+        else:                     return None
 
 class UnresolvedType(UType):
     """
@@ -113,7 +117,8 @@ class SetType(ModType):
     """
     def __init__(self, sub): super(SetType, self).__init__(sub)
     def __str__(self):       return "set<%s>" % self.sub()
-    def default_value(self):    return set()
+    def default_value(self): return set()
+    def is_scalar(self):     return False
 
 class ListType(ModType):
     """
@@ -122,6 +127,7 @@ class ListType(ModType):
     def __init__(self, sub): super(ListType, self).__init__(sub)
     def __str__(self):       return "list<%s>" % self.sub()
     def default_value(self): return list()
+    def is_scalar(self):     return False
 
 class DictType(ProductType):
     """

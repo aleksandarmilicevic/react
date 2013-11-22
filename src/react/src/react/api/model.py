@@ -1,6 +1,7 @@
 import copy
 from .metamodel import *
 from react import db
+from react.api.wrappers import *
 
 class ReactObj():
     __metaclass__ = ReactObjMClass
@@ -24,7 +25,7 @@ class ReactObj():
     def __repr__(self):
         flds = []
         for fld_name, fld_type in self.meta().fields().iteritems():
-            val = getattr(self, fld_name)
+            val = getattr(self, fld_name).unwrap()
             if fld_type.is_primitive():
                 val_str = repr(val)
             else:
@@ -89,16 +90,32 @@ class ReactObj():
         for lstner in cls.attr_access_listeners():
             lstner(*args)
 
+    @classmethod
+    def __getitem__(cls, **kw):
+        def matches(robj):
+            for fname, fvalue in kw:
+                if not getattr(robj, fname) == fvalue:
+                    return False
+            return True
+        return filter(matches, cls.all)
+
+    def _field_mutated(self, fname, fvalue):
+        ReactObj.notify_listeners("write", self, fname, fvalue)
+
     def __getattribute__(self, name):
-        fld_names = object.__getattribute__(self, "meta")().fields().keys()
+        meta = object.__getattribute__(self, "meta")()
+        fld_names = meta.fields().keys()
+        value = object.__getattribute__(self, name)
         if name in fld_names:
             ReactObj.notify_listeners("read", self, name)
-        value = object.__getattribute__(self, name)
+            value = Wrapper.wrap(value, self, name)
         return value
 
     def __setattr__(self, name, value):
         fld_names = object.__getattribute__(self, "meta")().fields().keys()
         if name in fld_names:
+            if isinstance(value, Wrapper): 
+                value = value.unwrap()
             ReactObj.notify_listeners("write", self, name, value)
         object.__setattr__(self, name, value)
 
@@ -108,13 +125,13 @@ class ReactObj():
         """
         returns the value of field `fname'
         """
-        getattr(self, fname)
+        return getattr(self, fname)
 
     def set_field(self, fname, fvalue):
         """
         sets the value of field `fname' to `fvalue'
         """
-        setattr(self, fname, fvalue)
+        return setattr(self, fname, fvalue)
 
     def _init_fields(self):
         """
@@ -148,16 +165,17 @@ class Event(ReactObj):
 
     def get_field(self, fname):
         call_super = lambda n: super(Event, self).get_field(n)
-        if fname == "sender":     call_super(self.meta().sender_fld_name())
-        elif fname == "receiver": call_super(self.meta().receiver_fld_name())
-        call_super(fname)
+        if fname == "sender":     return call_super(self.meta().sender_fld_name())
+        elif fname == "receiver": return call_super(self.meta().receiver_fld_name())
+        else:                     return call_super(fname)
 
     def set_field(self, fname, fvalue):
         call_super = lambda n, v: super(Event, self).set_field(n, v)
         if fname == "sender":     call_super(self.meta().sender_fld_name(), fvalue)
         elif fname == "receiver": call_super(self.meta().receiver_fld_name(), fvalue)
-        call_super(fname, fvalue)
+        else:                     call_super(fname, fvalue)
 
 def record(__name, **fields):  return new_react_cls(__name, (Record,), **fields)
 def machine(__name, **fields): return new_react_cls(__name, (Machine,), **fields)
 def event(__name, **fields):   return new_react_cls(__name, (Event,), **fields)
+

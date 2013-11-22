@@ -188,8 +188,6 @@ class ReactNode(object):
         self._other_machines = list()
         self._scheduler = Scheduler()
 
-        #self._scheduler.every(1000, self._send_heartbeat)
-
     def machine_name(self):   return self._machine_name
     def machine(self):        return self._machine
     def node_name(self):      return self._node_name
@@ -206,6 +204,7 @@ class ReactNode(object):
                 if obj is not None:
                     changed = True
                     updates.remove(fld_update)
+                    
                     val = ser.deserialize_objref(fld_update.field_value)
                     obj.set_field(fname, val)
                     conf.debug("updated %s.%s = %s", obj, fname, val)
@@ -233,7 +232,6 @@ class ReactNode(object):
             self._register_node()
             in_thread(self.commandInterface, conf.cli)
             in_thread(rospy.spin, conf.rospy_spin)
-            # thread.start_new_thread(rospy.spin, ())
 
         except rospy.ServiceException, e:
             conf.error("Service call failed: %s", e)
@@ -259,13 +257,19 @@ class ReactNode(object):
         self._update_other_machines(ans.other_machines)
 
         rospy.init_node(self.node_name())
-        self._scheduler.every(1, self._send_heartbeat)
-        #self._scheduler.at(15,47,30, self._send_heartbeat)
+        if conf.heartbeat: self._scheduler.every(1, self._send_heartbeat)
+
         conf.log("initializing push service")
         rospy.Service(self.my_push_srv_name(), react.srv.PushSrv, self.push_handler)
 
+        if hasattr(self.machine(), "on_exit"):
+            sys.exitfunc = self.machine().on_exit
+
         if hasattr(self.machine(), "on_start"):
             self.machine().on_start()
+
+        for every_event_spec in self.machine().meta().timer_events():
+            self._scheduler.every(every_event_spec[1], getattr(self.machine(), every_event_spec[0]))
 
     def _send_heartbeat(self):
         """

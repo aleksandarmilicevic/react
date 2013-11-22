@@ -29,8 +29,8 @@ class TestChat(unittest.TestCase, ModelTestHelper, ListenerHelper):
         self.assertSetEqual(set(["sender", "text"]), set(self.read_fld_names()))
 
         m = Msg()
-        self.assertEqual("", m.text)
-        self.assertIsNone(m.sender)
+        self.assertEqual("", m.text.unwrap())
+        self.assertIsNone(m.sender.unwrap())
         self.check_all(Msg)
 
         # test that unreg worked, ie no more accesses were added
@@ -51,8 +51,8 @@ class TestChat(unittest.TestCase, ModelTestHelper, ListenerHelper):
         self.check_all(ChatRoom)
         self.assert_rec_cls(ChatRoom, RecordMeta, "name", "members", "msgs")
         self.assert_obj_field_vals(ChatRoom, name="", members=list(), msgs=list())
-        self.assertEqual(list(), ChatRoom().members)
-        self.assertEqual(list(), ChatRoom().msgs)
+        self.assertEqual(list(), ChatRoom().members.unwrap())
+        self.assertEqual(list(), ChatRoom().msgs.unwrap())
 
     def test_client(self):
         self.check_all(Client)

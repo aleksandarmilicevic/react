@@ -1,3 +1,30 @@
+import curses
+
+class BeaverSimCurses(object):
+    def __init__(self):
+        pass
+
+    def __enter__(self):
+        self.stdscr = curses.initscr()
+        curses.noecho()
+        curses.cbreak()
+        self.stdscr.keypad(1)
+
+    def __exit__(self):
+        curses.nocbreak()
+        self.stdscr.keypad(0)
+        curses.echo()
+        curses.endwin()
+
+    def draw(self, lst):
+        # with self: 
+        for b in lst:
+            print b
+
+def start():
+    gui = BeaverSimCurses()
+    # gui.clrscr()
+    return gui
 
 # import pygtk
 # pygtk.require('2.0')
