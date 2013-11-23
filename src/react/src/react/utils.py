@@ -28,20 +28,20 @@ class curry:
         self.kwargs = kwargs.copy()
 
     def __call__(self, *args, **kwargs):
-        self._update_args(*args, **kwargs)
-        return self.fun(*self.pending, **self.kwargs)
+        a, kw = self._merge_args(*args, **kwargs)
+        return self.fun(*a, **kw)
 
-    def __getitem__(self, *args, **kwargs):
-        self._update_args(*args, **kwargs)
+    def __getitem__(self, tpl):
+        self.pending, self.kwargs = self._merge_args(*list(tpl))
+        return self
 
-    def _update_args(self, *args, **kwargs):
+    def _merge_args(self, *args, **kwargs):
         if kwargs and self.kwargs:
             kw = self.kwargs.copy()
             kw.update(kwargs)
         else:
             kw = kwargs or self.kwargs
-        self.pending = self.pending + args
-        self.kwargs = kw
+        return (self.pending + args, kw)
 
 def enum(*vals, **kvals):
     enums = {}

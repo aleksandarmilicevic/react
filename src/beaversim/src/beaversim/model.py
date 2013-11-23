@@ -4,6 +4,7 @@ from beaversim import gui
 import thread
 
 from react.api.model import *
+from react.api.terminals import *
 from react.api.types import *
 
 MAX_BEAVERS = 3
@@ -21,12 +22,14 @@ class Beaver(Record):
 """
   Machines
 """
-class BeaverSim(Machine):
+class BeaverSim(Machine, CursesTerminal):
     beavers = listof(Beaver)
 
-    # def on_start(self):
-    #     self.gui = gui.start()
-    #     self.beavers = [Beaver(pos_x=1,pos_y=1, v_x=0, v_y=1)]
+    def on_start(self):
+        self.term = gui.start()
+
+    def on_exit(self):
+        self.term.stop()
 
     # def every_1s(self):
     #     for beaver in self.beavers:

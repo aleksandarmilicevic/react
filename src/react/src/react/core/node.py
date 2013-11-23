@@ -266,7 +266,9 @@ class ReactMachine(ReactNode):
             rospy.Service(self.my_push_srv_name(), react.srv.PushSrv, self.push_handler)
 
             conf.log("initializing events service ...")
-            rospy.Service(self.my_event_srv_name(), react.srv.EventSrv, self.event_handler)
+            rospy.Service(self.my_event_srv_name(),
+                          react.srv.EventSrv,
+                          self.get_srv_handler("event", self.event_handler))
 
             if hasattr(self.machine(), "on_exit"):
                 sys.exitfunc = self.machine().on_exit
@@ -298,6 +300,11 @@ class ReactMachine(ReactNode):
         PushSrv service with the same name.
         """
         mname = self.machine_name()
+        mcls = react.meta.machine(mname)
+        if mcls is None:
+            conf.fatal("Machine class %s not found", mname)
+        if hasattr(mcls.cls(), "react_config"):
+            getattr(mcls.cls(), "react_config")();
         conf.log("Requesting machine registration for machine %s", mname)
         rospy.wait_for_service(react.core.REG_SRV_NAME)
         reg_srv = rospy.ServiceProxy(react.core.REG_SRV_NAME, react.srv.RegisterMachineSrv)

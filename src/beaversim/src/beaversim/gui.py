@@ -1,4 +1,6 @@
 import curses
+import react
+from react import conf
 
 class BeaverSimCurses(object):
     def __init__(self):
@@ -10,20 +12,27 @@ class BeaverSimCurses(object):
         curses.cbreak()
         self.stdscr.keypad(1)
 
-    def __exit__(self):
+    def __exit__(self, *a):
+        self.stdscr.refresh()
         curses.nocbreak()
         self.stdscr.keypad(0)
         curses.echo()
         curses.endwin()
 
+    def stop(self):
+        self.__exit__()
+
+    def clrscr(self):
+        self.stdscr.clear()
+
     def draw(self, lst):
-        # with self: 
         for b in lst:
             print b
 
 def start():
     gui = BeaverSimCurses()
-    # gui.clrscr()
+    gui.__enter__()
+    gui.clrscr()
     return gui
 
 # import pygtk
@@ -41,7 +50,7 @@ def start():
 # from PyQt4 import QtGui
 # BeaverQtApp = QtGui.QApplication([])
 
-# def start():    
+# def start():
 #     w = QtGui.QWidget()
 #     w.resize(250, 150)
 #     w.move(300, 300)
