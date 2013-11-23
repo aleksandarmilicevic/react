@@ -3,7 +3,7 @@ from .metamodel import *
 from react import db
 from react.api.wrappers import *
 
-class ReactObj():
+class ReactObj(object):
     __metaclass__ = ReactObjMClass
 
     _id_cnt = 0
@@ -77,6 +77,15 @@ class ReactObj():
     def all(cls): return filter(lambda r: isinstance(r, cls), db.all(cls.kind()))
 
     @classmethod
+    def where(cls, **kw):
+        def matches(robj):
+            for fname, fvalue in kw:
+                if not getattr(robj, fname) == fvalue:
+                    return False
+            return True
+        return filter(matches, cls.all())
+
+    @classmethod
     def find(cls, id): return react.db.find(cls.kind(), id)
 
     @classmethod
@@ -89,15 +98,6 @@ class ReactObj():
     def notify_listeners(cls, *args):
         for lstner in cls.attr_access_listeners():
             lstner(*args)
-
-    @classmethod
-    def __getitem__(cls, **kw):
-        def matches(robj):
-            for fname, fvalue in kw:
-                if not getattr(robj, fname) == fvalue:
-                    return False
-            return True
-        return filter(matches, cls.all())
 
     def _field_mutated(self, fname, fvalue):
         ReactObj.notify_listeners("write", self, fname, fvalue)
@@ -114,7 +114,7 @@ class ReactObj():
     def __setattr__(self, name, value):
         fld_names = object.__getattribute__(self, "meta")().fields().keys()
         if name in fld_names:
-            if isinstance(value, Wrapper): 
+            if isinstance(value, Wrapper):
                 value = value.unwrap()
             ReactObj.notify_listeners("write", self, name, value)
         object.__setattr__(self, name, value)

@@ -1,6 +1,6 @@
 import sys
 import beaversim
-from beaversim import gui 
+from beaversim import gui
 import thread
 
 from react.api.model import *
@@ -24,12 +24,12 @@ class Beaver(Record):
 class BeaverSim(Machine):
     beavers = listof(Beaver)
 
-    def on_start(self): 
+    def on_start(self):
         self.gui = gui.start()
         self.beavers = [Beaver(pos_x=1,pos_y=1, v_x=0, v_y=1)]
 
     def every_1s(self):
-        for beaver in self.beavers: 
+        for beaver in self.beavers:
             beaver.pos_x = beaver.pos_x + beaver.v_x
             beaver.pos_y = beaver.pos_y + beaver.v_y
         draw_spec = [(b.name, b.pos_x, b.pos_y) for b in self.beavers]
@@ -41,9 +41,11 @@ class RemoteCtrl(Machine):
 """
   Events
 """
-class Spawn(Event):
+class CtrlEv(Event):
     sender   = { "ctrl": RemoteCtrl }
     receiver = { "sim":  BeaverSim }
+
+class Spawn(CtrlEv):
     name     = str
 
     def guard(self):
@@ -52,31 +54,27 @@ class Spawn(Event):
     def handler(self):
         beaver = Beaver(name=self.name)
         self.sim.beavers.append(beaver)
-        
-class SetPos(Event):
-    sender   = { "ctrl": RemoteCtrl }
-    receiver = { "sim":  BeaverSim }
+
+class SetPos(CtrlEv):
     name     = str
     x        = int
     y        = int
 
     def guard(self):
-        self._beaver = Beaver[name=self.name]
+        self._beaver = Beaver.where(name=self.name)
         if self._beaver is None: return "Beaver with name %s not found" % self.name
 
     def handler(self):
         self._beaver.pos_x = self.x
         self._beaver.pos_y = self.y
 
-class SetVel(Event):
-    sender   = { "ctrl": RemoteCtrl }
-    receiver = { "sim":  BeaverSim }
+class SetVel(CtrlEv):
     name     = str
     vx       = int
     vy       = int
 
     def guard(self):
-        self._beaver = Beaver[name=self.name]
+        self._beaver = Beaver.where(name=self.name)
         if self._beaver is None: return "Beaver with name %s not found" % self.name
 
     def handler(self):

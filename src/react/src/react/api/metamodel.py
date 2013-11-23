@@ -5,7 +5,7 @@ from react import db
 from react.api.types import Type
 
 def is_func_type(x):
-    tname = type(x).__name__ 
+    tname = type(x).__name__
     return tname == "function" or tname == "classmethod" or tname == "staticmethod"
 
 class ReactObjMClass(type):
@@ -19,7 +19,7 @@ class ReactObjMClass(type):
 
     # def __new__(meta, name, bases, dct):
     #     return super(ReactObjMClass, meta).__new__(meta, name, bases, dct)
-        
+
     def __init__(cls, name, bases, dct):
         """
         Intercept class definitions and register defined classes with react.meta
@@ -40,28 +40,36 @@ class ReactObjMClass(type):
         # register with m1
         react.meta.add(cls.kind(), cls.meta_obj)
 
-    def fields(cls, **kwargs):
-        flds = [(k, Type.get(v)) for (k, v) in kwargs.iteritems()]
-        cls.meta().fields().update(flds)
-    
-
 class RecordMeta(object):
     """
     @attr _cls: type;                        corresponding ReactObj type (class)
     @attr _fields: dict<str, react.api.Type> dict of fields
     """
     def __init__(self, cls, dct):
+        from react.api.model import ReactObj
         self._cls = cls
         self._fields = dict()
+        self._parents = filter(lambda c: issubclass(c, ReactObj) and (not c == ReactObj),
+                               cls.__bases__)
 
         # set fields from dct
         self._iter_dct(dct, self._add_field)
 
     def name(self):        return self._cls.__name__
     def cls(self):         return self._cls
+    def parents(self):     return copy.copy(self._parents)
     def obj_type(self):    return self.cls()
-    def fields(self):      return self._fields
-    def field(self, name): return self._fields.get(name)
+
+    def fields(self, include_super=True):
+        ans = copy.copy(self._fields)
+        if include_super:
+            super_metas = map(lambda c: c.meta(), self._parents)
+            for super_meta in super_metas:
+                ans.update(super_meta.fields())
+        return ans
+
+    def field(self, name, include_super=True):
+        return self.fields(include_super).get(name)
 
     def _iter_dct(self, dct, func):
         for fname, ftype in dct.iteritems():
@@ -81,12 +89,12 @@ class MachineMeta(RecordMeta):
 
     @classmethod
     def _parse_time_in_sec(cls, time_str):
-        try: 
+        try:
             return int(time_str)
         except ValueError:
             if time_str.endswith('ms'): return cls._parse_time_in_sec(time_str[0:-2]) / 1000
             elif time_str.endswith('s'): return cls._parse_time_in_sec(time_str[0:-1])
-            else: raise ValueError()                
+            else: raise ValueError()
 
     def _extract_timer_events(self, dct):
         for fname, ftype in dct.iteritems():
@@ -122,4 +130,4 @@ class EventMeta(RecordMeta):
         elif self._ctx == "receiver": self._receiver_fld_name = fname
         super(EventMeta, self)._add_field(fname, ftype)
 
-        
+
