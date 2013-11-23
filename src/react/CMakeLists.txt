@@ -36,6 +36,7 @@ add_service_files(
   FILES
   EventSrv.srv
   RegisterMachineSrv.srv
+  UnregisterMachineSrv.srv
   PushSrv.srv
   NodeDiscoverySrv.srv
   HeartbeatSrv.srv

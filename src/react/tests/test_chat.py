@@ -9,6 +9,7 @@ import react
 from react.examples.chat.chat_model import *
 from react.api.model import *
 from react.api.metamodel import *
+from react.api.wrappers import unwrap
 from react.helpers.test.model_test_helper import ModelTestHelper
 from react.helpers.listener_helper import ListenerHelper
 
@@ -29,8 +30,8 @@ class TestChat(unittest.TestCase, ModelTestHelper, ListenerHelper):
         self.assertSetEqual(set(["sender", "text"]), set(self.read_fld_names()))
 
         m = Msg()
-        self.assertEqual("", m.text.unwrap())
-        self.assertIsNone(m.sender.unwrap())
+        self.assertEqual("", unwrap(m.text))
+        self.assertIsNone(unwrap(m.sender))
         self.check_all(Msg)
 
         # test that unreg worked, ie no more accesses were added
@@ -51,8 +52,8 @@ class TestChat(unittest.TestCase, ModelTestHelper, ListenerHelper):
         self.check_all(ChatRoom)
         self.assert_rec_cls(ChatRoom, RecordMeta, "name", "members", "msgs")
         self.assert_obj_field_vals(ChatRoom, name="", members=list(), msgs=list())
-        self.assertEqual(list(), ChatRoom().members.unwrap())
-        self.assertEqual(list(), ChatRoom().msgs.unwrap())
+        self.assertEqual(list(), unwrap(ChatRoom().members))
+        self.assertEqual(list(), unwrap(ChatRoom().msgs))
 
     def test_client(self):
         self.check_all(Client)

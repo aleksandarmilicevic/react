@@ -31,12 +31,12 @@ class BeaverSim(Machine, CursesTerminal):
     def on_exit(self):
         self.term.stop()
 
-    # def every_1s(self):
-    #     for beaver in self.beavers:
-    #         beaver.pos_x = beaver.pos_x + beaver.v_x
-    #         beaver.pos_y = beaver.pos_y + beaver.v_y
-    #     draw_spec = [(b.name, b.pos_x, b.pos_y) for b in self.beavers]
-    #     self.gui.draw(draw_spec)
+    def every_1s(self):
+        for beaver in self.beavers:
+            beaver.pos_x = beaver.pos_x + beaver.v_x
+            beaver.pos_y = beaver.pos_y + beaver.v_y
+        draw_spec = [(b.name, b.pos_x, b.pos_y, 1) for b in self.beavers]
+        self.term.draw(draw_spec)
 
 class RemoteCtrl(Machine):
     pass
@@ -53,10 +53,10 @@ class Spawn(CtrlEv):
     name     = str
 
     def guard(self):
-        self.sim.beavers.size() < MAX_BEAVERS
+        len(self.sim.beavers) < MAX_BEAVERS
 
     def handler(self):
-        beaver = Beaver(name=self.name)
+        beaver = Beaver(name=self.name, pos_x=0, pos_y=0, v_x=1, v_y=0)
         self.sim.beavers.append(beaver)
 
 class SetPos(CtrlEv):

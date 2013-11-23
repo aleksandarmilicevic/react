@@ -25,7 +25,7 @@ class ReactObj(object):
     def __repr__(self):
         flds = []
         for fld_name, fld_type in self.meta().fields().iteritems():
-            val = getattr(self, fld_name).unwrap()
+            val = unwrap(getattr(self, fld_name))
             if fld_type.is_primitive():
                 val_str = repr(val)
             else:
@@ -114,8 +114,7 @@ class ReactObj(object):
     def __setattr__(self, name, value):
         fld_names = object.__getattribute__(self, "meta")().fields().keys()
         if name in fld_names:
-            if isinstance(value, Wrapper):
-                value = value.unwrap()
+            value = unwrap(value)
             ReactObj.notify_listeners("write", self, name, value)
         object.__setattr__(self, name, value)
 
@@ -132,6 +131,9 @@ class ReactObj(object):
         sets the value of field `fname' to `fvalue'
         """
         return setattr(self, fname, fvalue)
+
+    def delete(self):
+        react.db.delete(self.meta().cls().kind(), self)
 
     def _init_fields(self):
         """

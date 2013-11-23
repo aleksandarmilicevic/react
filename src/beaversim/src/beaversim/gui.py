@@ -6,32 +6,42 @@ class BeaverSimCurses(object):
     def __init__(self):
         pass
 
-    def __enter__(self):
+    def start(self):
         self.stdscr = curses.initscr()
+        curses.start_color()
+        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+        curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+        curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
+        curses.init_pair(5, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+        curses.init_pair(6, curses.COLOR_CYAN, curses.COLOR_BLACK)
+        curses.init_pair(7, curses.COLOR_WHITE, curses.COLOR_BLACK)
         curses.noecho()
         curses.cbreak()
+        curses.curs_set(0)
         self.stdscr.keypad(1)
 
-    def __exit__(self, *a):
-        self.stdscr.refresh()
+    def stop(self):
         curses.nocbreak()
         self.stdscr.keypad(0)
         curses.echo()
+        curses.curs_set(1)
         curses.endwin()
-
-    def stop(self):
-        self.__exit__()
 
     def clrscr(self):
         self.stdscr.clear()
+        self.stdscr.refresh()
 
-    def draw(self, lst):
-        for b in lst:
-            print b
+    def draw(self, draw_spec):
+        self.stdscr.clear()
+        for name, x, y, color in draw_spec:
+            conf.trace("about to draw %s, %s, %s" % (type(y), type(x), type(name)))
+            self.stdscr.addstr(y, x, name, curses.color_pair(color))
+        self.stdscr.refresh()
 
 def start():
     gui = BeaverSimCurses()
-    gui.__enter__()
+    gui.start()
     gui.clrscr()
     return gui
 

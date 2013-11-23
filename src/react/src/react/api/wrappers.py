@@ -65,4 +65,17 @@ class Wrapper(object):
 
     @staticmethod
     def wrap(*a, **kw):
-        return Wrapper(*a, **kw)
+        # return Wrapper(*a, **kw)
+        return a[0]
+
+def wrap(*a, **kw):
+    return Wrapper.wrap(*a, **kw)
+
+def unwrap(val):
+    if isinstance(val, Wrapper):
+        return val.unwrap()
+    else:
+        return val
+
+
+

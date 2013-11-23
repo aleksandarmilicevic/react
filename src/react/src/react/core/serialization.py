@@ -3,6 +3,7 @@ from react.api import model
 from react import db
 from react import msg
 from react import meta
+from react.api.wrappers import unwrap
 
 def serialize_objref(robj):
     if isinstance(robj, react.api.model.ReactObj):
@@ -10,16 +11,16 @@ def serialize_objref(robj):
                                    cls_name  = robj.meta().name(),
                                    obj_id    = robj.id(),
                                    value     = "")
-    else:        
+    else:
         return react.msg.ObjRefMsg(kind      = "primitive",
                                    cls_name  = type(robj).__name__,
                                    obj_id    = -1,
-                                   value     = repr(robj))
+                                   value     = str(robj))
 
 def serialize_objval(robj):
     objref = serialize_objref(robj)
     fld_names = robj.meta().fields().keys()
-    fld_vals = map(lambda fname: serialize_objref(getattr(robj, fname).unwrap()), fld_names)
+    fld_vals = map(lambda fname: serialize_objref(unwrap(getattr(robj, fname))), fld_names)
     return react.msg.ObjValMsg(ref = objref,
                                field_names = fld_names,
                                field_values = fld_vals)

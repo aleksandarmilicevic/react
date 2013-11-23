@@ -118,6 +118,10 @@ class ReactCore(ReactNode):
         rospy.Service(react.core.REG_SRV_NAME,
                       react.srv.RegisterMachineSrv,
                       self.get_srv_handler("registration", self.reg_handler))
+        conf.log("initializing unregistration service ...")
+        rospy.Service(react.core.UNREG_SRV_NAME,
+                      react.srv.UnregisterMachineSrv,
+                      self.get_srv_handler("unregistration", self.unreg_handler))
         conf.log("initializing events service ...")
         rospy.Service(react.core.EVENT_SRV_NAME,
                       react.srv.EventSrv,
@@ -154,6 +158,22 @@ class ReactCore(ReactNode):
             "other_machines": self._get_other_machines_serialized(machine)
             }
         return react.srv.RegisterMachineSrvResponse(**resp)
+
+    def unreg_handler(self, req):
+        """
+        Handler for the UnregisterMachineSrv service.
+        """
+        mid = req.machine.obj_id
+        machine = self._connected_nodes.pop(mid, None)
+        if machine is None:
+            conf.warn("Machine %s not found in the list of connected nodes" % req.machine)
+        else:
+            conf.log("Machine %s disconnected" % machine)
+            machine.delete()
+        resp = {
+            "status": "ok"
+            }
+        return react.srv.UnregisterMachineSrvResponse(**resp)
 
     def node_discovery_handler(self, req):
         """
@@ -270,8 +290,7 @@ class ReactMachine(ReactNode):
                           react.srv.EventSrv,
                           self.get_srv_handler("event", self.event_handler))
 
-            if hasattr(self.machine(), "on_exit"):
-                sys.exitfunc = self.machine().on_exit
+            sys.exitfunc = self._on_exit
 
             if hasattr(self.machine(), "on_start"):
                 self.machine().on_start()
@@ -286,11 +305,21 @@ class ReactMachine(ReactNode):
         except rospy.ServiceException, e:
             conf.error("Service call failed: %s", e)
 
-    def my_push_srv_name(self):
-        return push_srv_name(self.machine())
+    def my_push_srv_name(self):  return push_srv_name(self.machine())
+    def my_event_srv_name(self): return event_srv_name(self.machine())
 
-    def my_event_srv_name(self):
-        return event_srv_name(self.machine())
+    def _on_exit(self):
+        try:
+            if self.machine() is None: return
+            if hasattr(self.machine(), "on_exit"):
+                self.machine().on_exit()
+        except Exception: pass
+
+        try:
+            unreg_srv = rospy.ServiceProxy(react.core.UNREG_SRV_NAME,
+                                           react.srv.UnregisterMachineSrv)
+            unreg_srv(ser.serialize_objref(self.machine()))
+        except Exception: pass
 
     def _register_node(self):
         """

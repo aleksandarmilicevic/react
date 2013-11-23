@@ -2,6 +2,8 @@ import react
 from react.api.metamodel import ReactObjMClass
 from react import meta
 from react import db
+from react.api.wrappers import Wrapper
+from react.api.wrappers import unwrap
 
 class ModelTestHelper:
     def assert_rec_cls(self, rec_cls, meta_cls, *fld_names, **fields):
@@ -25,11 +27,11 @@ class ModelTestHelper:
         self.assertEqual(rec_cls.__name__, meta.name())
 
         # check fields
-        if len(fld_names) > 0: self.assertEqual(len(fld_names), len(meta.fields())) 
+        if len(fld_names) > 0: self.assertEqual(len(fld_names), len(meta.fields()))
         for fname in fld_names:
             self.assertTrue(fname in meta.fields())
 
-        if len(fields) > 0: self.assertEqual(len(fields), len(meta.fields())) 
+        if len(fields) > 0: self.assertEqual(len(fields), len(meta.fields()))
         for fname in fields:
             self.assertTrue(fname in meta.fields())
             self.assertEqual(str(fields[fname]), str(meta.fields()[fname]))
@@ -43,14 +45,14 @@ class ModelTestHelper:
     def assert_obj_field_vals(self, cls, **fld_vals):
         obj = cls()
         for fname, fvalue in fld_vals.iteritems():
-            self.assertEqual(fvalue, getattr(obj, fname).unwrap())
+            self.assertEqual(fvalue, unwrap(getattr(obj, fname)))
 
     def check_all(self, cls):
         pre = cls.all()
         obj = cls()
         post = pre + [obj]
         self.assertEqual(set(post), set(cls.all()))
-    
+
     def check_alias_obj(self, cls):
         obj = cls()
         pre = cls.all()
@@ -58,4 +60,4 @@ class ModelTestHelper:
         self.assertEqual(obj.id(), a.id())
         self.assertNotEqual(id(obj), id(a))
         self.assertEqual(pre, cls.all())
-                
+

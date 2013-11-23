@@ -1,4 +1,5 @@
 REG_SRV_NAME            = "node_registration_service"
+UNREG_SRV_NAME          = "node_unregistration_service"
 HEARTBEAT_SRV_NAME      = "heartbeat_service"
 NODE_DISCOVERY_SRV_NAME = "node_discovery_service"
 EVENT_SRV_NAME          = "event_service"
