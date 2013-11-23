@@ -97,7 +97,7 @@ class ReactObj():
                 if not getattr(robj, fname) == fvalue:
                     return False
             return True
-        return filter(matches, cls.all)
+        return filter(matches, cls.all())
 
     def _field_mutated(self, fname, fvalue):
         ReactObj.notify_listeners("write", self, fname, fvalue)
