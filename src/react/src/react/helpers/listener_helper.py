@@ -14,9 +14,9 @@ class ListenerHelper:
     def unreg_lstner(self):
         ReactObj.remove_access_listener(self.lstner)
 
-    def filter_accesses(self, col, val): return filter(lambda t: t[col] == val, self.accesses)
-    def read_accesses(self):   return self.filter_accesses(0, "read")
-    def write_accesses(self):  return self.filter_accesses(0, "write")
+    def filter_accesses(self, col, val): return filter(lambda t: t[col]==val, self.accesses)
+    def read_accesses(self):             return self.filter_accesses(0, "read")
+    def write_accesses(self):            return self.filter_accesses(0, "write")
 
     @staticmethod
     def select_col(col, lst):  return map(lambda x: x[col], lst)

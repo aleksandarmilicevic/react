@@ -20,11 +20,11 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         machine_name = str(sys.argv[1])
 
-        if machine_name == "BeaverSim":
-            conf.cli = conf.E_THR_OPT.FALSE
-            #conf.log = conf.E_LOGGER.NULL
+        # if machine_name == "BeaverSim":
+        #     conf.cli = conf.E_THR_OPT.FALSE
+        #     #conf.log = conf.E_LOGGER.NULL
 
-        react.core.node.ReactNode(machine_name).start_node()
+        react.core.node.ReactMachine(machine_name).start_machine()
 
 
         # if machine_name == "BeaverSim":

@@ -79,6 +79,22 @@ class RecordMeta(object):
     def _add_field(self, fname, ftype):
         self._fields[fname] = Type.get(ftype)
 
+    def _iter_parent_metas(self, attr_name, func_name=None, *a, **kw):
+        def fmap(robj_cls):
+            if attr_name:
+                return getattr(robj_cls.meta(), attr_name)
+            else:
+                return getattr(robj_cls.meta(), func_name)(*a, **kw)
+        for robj_cls in self._parents:
+            yield fmap(robj_cls)
+
+    def _find_attr(self, attr_name):
+        if hasattr(self, attr_name) and getattr(self, attr_name) is not None:
+            return getattr(self, attr_name)
+        for ans in self._iter_parent_metas(attr_name):
+            if ans is not None: return ans
+        return None
+
 class MachineMeta(RecordMeta):
     def __init__(self, cls, dct):
         super(MachineMeta, self).__init__(cls, dct)
@@ -112,8 +128,8 @@ class EventMeta(RecordMeta):
         self._receiver_fld_name = None
         super(EventMeta, self).__init__(*args, **kwargs)
 
-    def sender_fld_name(self):   return self._sender_fld_name
-    def receiver_fld_name(self): return self._receiver_fld_name
+    def sender_fld_name(self):   return self._find_attr("_sender_fld_name")
+    def receiver_fld_name(self): return self._find_attr("_receiver_fld_name")
     def sender(self):            return self.field(self.sender_fld_name())
     def receiver(self):          return self.field(self.receiver_fld_name())
 

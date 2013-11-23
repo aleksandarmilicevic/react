@@ -1,3 +1,4 @@
+import abc
 import copy
 import rospy
 import react
@@ -21,6 +22,9 @@ def node_name(machine):
 def push_srv_name(machine):
     return "%s_%s" % (react.core.PUSH_SRV_NAME, node_name(machine))
 
+def event_srv_name(machine):
+    return "%s_%s" % (react.core.EVENT_SRV_NAME, node_name(machine))
+
 def in_thread(fun, opt):
     if opt == conf.E_THR_OPT.FALSE:
         pass
@@ -31,7 +35,65 @@ def in_thread(fun, opt):
     else:
         raise StandardError("unrecognized thread option %s" % opt)
 
-class ReactCore(object, ListenerHelper):
+#########################################################################################
+
+class ReactNode(object, ListenerHelper):
+    __metaclass__ = abc.ABCMeta
+
+    def machine(): return None
+
+    def cli_thr_func(self):
+        command_list = []
+        while True:
+            s = raw_input()
+            command_list.append(s)
+            ans = cli.parse_and_exe(s, self)
+
+    def forward_event_req(self, req, ev=None):
+        if ev is None:
+            ev = ser.deserialize_objval(req.event)
+
+        my_machine_id = -1
+        if self.machine() is not None:
+            my_machine_id = self.machine().id()
+
+        if ev.receiver().id() != my_machine_id:
+            #TODO: this can fail
+            conf.log("forwarding event %s", ev)
+            ev_srv = rospy.ServiceProxy(event_srv_name(ev.receiver()),
+                                        react.srv.EventSrv)
+            ev_srv(req.event)
+
+    def execute_event_req(self, req, forward=True):
+        ev = ser.deserialize_objval(req.event)
+        guard_msg = ev.guard()
+        status = "ok"
+        if guard_msg is None:
+            if forward:
+                self.forward_event_req(req, ev)
+            try:
+                self.reg_lstner()
+                result = ev.handler()
+            finally:
+                self.unreg_lstner()
+        else:
+            status = "guard failed"
+            result = guard_msg
+        return {
+            "status": status,
+            "result": ser.serialize_objref(result),
+            }
+
+    def event_handler(self, req):
+        """
+        Handler for the EventSrv service.
+        """
+        resp = execute_event_req(self, req)
+        return react.srv.EventSrvResponse(**resp)
+
+#########################################################################################
+
+class ReactCore(ReactNode):
     """
     ROS node for the ReactCore
     """
@@ -48,7 +110,7 @@ class ReactCore(object, ListenerHelper):
         conf.log("initializing events service ...")
         rospy.Service(react.core.EVENT_SRV_NAME,
                       react.srv.EventSrv,
-                      self.get_srv_handler("event", self.event_handler))
+                      self.get_srv_handler("event", self.core_event_handler))
         conf.log("initializing node discovery service ...")
         rospy.Service(react.core.NODE_DISCOVERY_SRV_NAME,
                       react.srv.NodeDiscoverySrv,
@@ -59,40 +121,10 @@ class ReactCore(object, ListenerHelper):
                       self.get_srv_handler("heartbeat", self.heartbeat_handler, False))
 
         try:
-            in_thread(self.commandInterface, conf.cli)
+            in_thread(self.cli_thr_func, conf.cli)
             in_thread(rospy.spin, conf.rospy_spin)
         except:
             conf.error("Error: unable to start thread")
-
-    def commandInterface(self):
-        while True:
-            s = raw_input()
-            ans = cli.parse_and_exe(s, self)
-            if ans is not None:
-                conf.debug("Received response: %s", ans)
-
-    def event_handler(self, req):
-        """
-        Handler for the EventSrv service.
-        """
-        ev = ser.deserialize_objval(req.event)
-        guard_msg = ev.guard()
-        status = "ok"
-        if guard_msg is None:
-            try:
-                self.reg_lstner()
-                result = ev.handler()
-            finally:
-                self.unreg_lstner()
-        else:
-            status = "guard failed"
-            result = guard_msg
-        self._push_updates()
-        resp = {
-            "status": status,
-            "result": ser.serialize_objref(result)
-            }
-        return react.srv.EventSrvResponse(**resp)
 
     def reg_handler(self, req):
         """
@@ -111,6 +143,9 @@ class ReactCore(object, ListenerHelper):
             "other_machines": self._get_other_machines_serialized(machine)
             }
         return react.srv.RegisterMachineSrvResponse(**resp)
+
+    def core_event_handler(self, req):
+        pass
 
     def node_discovery_handler(self, req):
         """
@@ -163,19 +198,18 @@ class ReactCore(object, ListenerHelper):
         """
         return map(lambda m: ser.serialize_objref(m), self._get_other_machines(this_machine))
 
-    def _push_updates(self):
-        wa = self.write_accesses()
-        if len(wa) == 0: return
+    def _push_updates(self, write_accesses):
+        if len(write_accesses) == 0: return
         def serref(obj): return ser.serialize_objref(obj)
         def fmap(t):     return msg.FldUpdateMsg(serref(t[1]), t[2], serref(t[3]))
-        updates = map(fmap, wa)
+        updates = map(fmap, write_accesses)
         for machine in self._connected_nodes.itervalues():
             push_srv = rospy.ServiceProxy(push_srv_name(machine), react.srv.PushSrv)
             push_srv(updates)
 
 #########################################################################################
 
-class ReactNode(object):
+class ReactMachine(ReactNode):
     """
     ROS node for React machines
     """
@@ -204,21 +238,13 @@ class ReactNode(object):
                 if obj is not None:
                     changed = True
                     updates.remove(fld_update)
-                    
+
                     val = ser.deserialize_objref(fld_update.field_value)
                     obj.set_field(fname, val)
                     conf.debug("updated %s.%s = %s", obj, fname, val)
         return react.srv.PushSrvResponse("ok")
 
-    def commandInterface(self):
-        commandList = []
-        while True:
-            s = raw_input()
-            commandList.append(s)
-            ans = cli.parse_and_exe(s, self)
-        curses.endwin()
-
-    def start_node(self):
+    def start_machine(self):
         """
           (1) registers this machien with ReactCore (by calling
               self._register_node()).  That will initialize
@@ -230,7 +256,30 @@ class ReactNode(object):
         """
         try:
             self._register_node()
-            in_thread(self.commandInterface, conf.cli)
+
+            rospy.init_node(self.node_name())
+
+            if conf.heartbeat:
+                conf.log("scheduling periodic hearbeat")
+                self._scheduler.every(1, self._send_heartbeat)
+
+            conf.log("initializing push service")
+            rospy.Service(self.my_push_srv_name(), react.srv.PushSrv, self.push_handler)
+
+            conf.log("initializing events service ...")
+            rospy.Service(self.my_event_srv_name(), react.srv.EventSrv, self.event_handler)
+
+            if hasattr(self.machine(), "on_exit"):
+                sys.exitfunc = self.machine().on_exit
+
+            if hasattr(self.machine(), "on_start"):
+                self.machine().on_start()
+
+            for every_event_spec in self.machine().meta().timer_events():
+                self._scheduler.every(every_event_spec[1],
+                                      getattr(self.machine(), every_event_spec[0]))
+
+            in_thread(self.cli_thr_func, conf.cli)
             in_thread(rospy.spin, conf.rospy_spin)
 
         except rospy.ServiceException, e:
@@ -238,6 +287,9 @@ class ReactNode(object):
 
     def my_push_srv_name(self):
         return push_srv_name(self.machine())
+
+    def my_event_srv_name(self):
+        return event_srv_name(self.machine())
 
     def _register_node(self):
         """
@@ -255,21 +307,6 @@ class ReactNode(object):
         self._machine = ser.deserialize_objref(ans.this_machine)
         self._node_name = ans.this_node_name
         self._update_other_machines(ans.other_machines)
-
-        rospy.init_node(self.node_name())
-        if conf.heartbeat: self._scheduler.every(1, self._send_heartbeat)
-
-        conf.log("initializing push service")
-        rospy.Service(self.my_push_srv_name(), react.srv.PushSrv, self.push_handler)
-
-        if hasattr(self.machine(), "on_exit"):
-            sys.exitfunc = self.machine().on_exit
-
-        if hasattr(self.machine(), "on_start"):
-            self.machine().on_start()
-
-        for every_event_spec in self.machine().meta().timer_events():
-            self._scheduler.every(every_event_spec[1], getattr(self.machine(), every_event_spec[0]))
 
     def _send_heartbeat(self):
         """

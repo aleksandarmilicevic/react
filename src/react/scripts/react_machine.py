@@ -14,7 +14,7 @@ def usage():
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         machine_name = str(sys.argv[1])
-        react.core.node.ReactNode(machine_name).start_node()
+        react.core.node.ReactMachine(machine_name).start_node()
     else:
         print usage()
         sys.exit(1)

@@ -24,16 +24,16 @@ class Beaver(Record):
 class BeaverSim(Machine):
     beavers = listof(Beaver)
 
-    def on_start(self):
-        self.gui = gui.start()
-        self.beavers = [Beaver(pos_x=1,pos_y=1, v_x=0, v_y=1)]
+    # def on_start(self):
+    #     self.gui = gui.start()
+    #     self.beavers = [Beaver(pos_x=1,pos_y=1, v_x=0, v_y=1)]
 
-    def every_1s(self):
-        for beaver in self.beavers:
-            beaver.pos_x = beaver.pos_x + beaver.v_x
-            beaver.pos_y = beaver.pos_y + beaver.v_y
-        draw_spec = [(b.name, b.pos_x, b.pos_y) for b in self.beavers]
-        self.gui.draw(draw_spec)
+    # def every_1s(self):
+    #     for beaver in self.beavers:
+    #         beaver.pos_x = beaver.pos_x + beaver.v_x
+    #         beaver.pos_y = beaver.pos_y + beaver.v_y
+    #     draw_spec = [(b.name, b.pos_x, b.pos_y) for b in self.beavers]
+    #     self.gui.draw(draw_spec)
 
 class RemoteCtrl(Machine):
     pass
@@ -80,3 +80,5 @@ class SetVel(CtrlEv):
     def handler(self):
         self._beaver.v_x = self.vx
         self._beaver.v_y = self.vy
+
+#import pdb; pdb.set_trace()
