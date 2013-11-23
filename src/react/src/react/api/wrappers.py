@@ -26,7 +26,7 @@ class Wrapper(object):
             return 0
         elif ftype.is_scalar():
             return 1
-        else: 
+        else:
             return len(self._target)
 
     def __iter__(self):
@@ -35,20 +35,33 @@ class Wrapper(object):
             pass
         elif ftype.is_scalar():
             yield self._target
-        else: 
+        else:
             for x in self._target:
                 yield x
 
     def __getattr__(self, name):
         return getattr(self._target, name)
-        
-    def __add__(self, other): 
-        if isinstance(other, Wrapper): 
+
+    def __add__(self, other):
+        if isinstance(other, Wrapper):
             other = other.unwrap()
         return Wrapper.wrap(self._target + other)
 
+    def __eq__(self, other): return self.__bop__("eq", other)
+    def __ne__(self, other): return self.__bop__("ne", other)
+    def __gt__(self, other): return self.__bop__("gt", other)
+    def __lt__(self, other): return self.__bop__("lt", other)
+    def __ge__(self, other): return self.__bop__("ge", other)
+    def __le__(self, other): return self.__bop__("le", other)
+
     def __str__(self): return str(self._target)
     def __repr__(self): return repr(self._target)
+
+    def __bop__(self, op, other):
+        if isinstance(other, Wrapper):
+            other = other.unwrap()
+        opname = "__%s__" % op
+        return getattr(self.unwrap(), opname)(other)
 
     @staticmethod
     def wrap(*a, **kw):

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import react
+from react import conf
 from react import core
 from react.core import node
 

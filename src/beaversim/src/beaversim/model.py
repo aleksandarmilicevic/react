@@ -45,6 +45,7 @@ class CtrlEv(Event):
     sender   = { "ctrl": RemoteCtrl }
     receiver = { "sim":  BeaverSim }
 
+
 class Spawn(CtrlEv):
     name     = str
 
@@ -61,8 +62,9 @@ class SetPos(CtrlEv):
     y        = int
 
     def guard(self):
-        self._beaver = Beaver.where(name=self.name)
-        if self._beaver is None: return "Beaver with name %s not found" % self.name
+        beavers = Beaver.where(name=self.name)
+        if not beavers: return "Beaver %s not found" % self.name
+        self._beaver = beavers[0]
 
     def handler(self):
         self._beaver.pos_x = self.x
@@ -74,8 +76,9 @@ class SetVel(CtrlEv):
     vy       = int
 
     def guard(self):
-        self._beaver = Beaver.where(name=self.name)
-        if self._beaver is None: return "Beaver with name %s not found" % self.name
+        beavers = Beaver.where(name=self.name)
+        if not beavers: return "Beaver with name %s not found" % self.name
+        self._beaver = beavers[0]
 
     def handler(self):
         self._beaver.v_x = self.vx

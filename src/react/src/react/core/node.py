@@ -40,7 +40,7 @@ def in_thread(fun, opt):
 class ReactNode(object, ListenerHelper):
     __metaclass__ = abc.ABCMeta
 
-    def machine(): return None
+    def machine(self): return None
 
     def cli_thr_func(self):
         command_list = []
@@ -57,10 +57,11 @@ class ReactNode(object, ListenerHelper):
         if self.machine() is not None:
             my_machine_id = self.machine().id()
 
-        if ev.receiver().id() != my_machine_id:
+        ev_receiver = ev.get_receiver()
+        if ev_receiver.id() != my_machine_id:
             #TODO: this can fail
-            conf.log("forwarding event %s", ev)
-            ev_srv = rospy.ServiceProxy(event_srv_name(ev.receiver()),
+            conf.log("forwarding event %s to %s", ev, ev_receiver)
+            ev_srv = rospy.ServiceProxy(event_srv_name(ev_receiver),
                                         react.srv.EventSrv)
             ev_srv(req.event)
 
@@ -88,8 +89,18 @@ class ReactNode(object, ListenerHelper):
         """
         Handler for the EventSrv service.
         """
-        resp = execute_event_req(self, req)
+        resp = self.execute_event_req(req)
         return react.srv.EventSrvResponse(**resp)
+
+    def get_srv_handler(self, srv_name, func, log=True):
+        def srv_handler(req):
+            if log: conf.debug("*** %s *** request received\n%s", srv_name, req)
+            resp = func(req)
+            if log: conf.debug("Sending back resp:\n%s", resp)
+            if log: conf.debug("--------------------------\n")
+            return resp
+        return srv_handler
+
 
 #########################################################################################
 
@@ -110,7 +121,7 @@ class ReactCore(ReactNode):
         conf.log("initializing events service ...")
         rospy.Service(react.core.EVENT_SRV_NAME,
                       react.srv.EventSrv,
-                      self.get_srv_handler("event", self.core_event_handler))
+                      self.get_srv_handler("event", self.event_handler))
         conf.log("initializing node discovery service ...")
         rospy.Service(react.core.NODE_DISCOVERY_SRV_NAME,
                       react.srv.NodeDiscoverySrv,
@@ -144,9 +155,6 @@ class ReactCore(ReactNode):
             }
         return react.srv.RegisterMachineSrvResponse(**resp)
 
-    def core_event_handler(self, req):
-        pass
-
     def node_discovery_handler(self, req):
         """
         Handler for the NodeDiscoverSrv service.
@@ -165,15 +173,6 @@ class ReactCore(ReactNode):
             "ok": True
             }
         return react.srv.HeartbeatSrvResponse(**resp)
-
-    def get_srv_handler(self, srv_name, func, log=True):
-        def srv_handler(req):
-            if log: conf.debug("*** %s *** request received\n%s", srv_name, req)
-            resp = func(req)
-            if log: conf.debug("Sending back resp:\n%s", resp)
-            if log: conf.debug("--------------------------\n")
-            return resp
-        return srv_handler
 
     def _get_other_machines(self, this_machine):
         """

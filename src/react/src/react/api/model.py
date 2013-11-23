@@ -79,7 +79,7 @@ class ReactObj(object):
     @classmethod
     def where(cls, **kw):
         def matches(robj):
-            for fname, fvalue in kw:
+            for fname, fvalue in kw.iteritems():
                 if not getattr(robj, fname) == fvalue:
                     return False
             return True
@@ -158,10 +158,10 @@ class Event(ReactObj):
     @classmethod
     def is_event(cls): return True
 
-    def sender(self):   return self.get_field("sender")
-    def receiver(self): return self.get_field("receiver")
-    def guard(self):    return None
-    def handler(self):  return None
+    def get_sender(self):   return self.get_field("sender")
+    def get_receiver(self): return self.get_field("receiver")
+    def guard(self):        return None
+    def handler(self):      return None
 
     def get_field(self, fname):
         call_super = lambda n: super(Event, self).get_field(n)
