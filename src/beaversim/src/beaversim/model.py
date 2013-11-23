@@ -8,6 +8,8 @@ from react.api.terminals import *
 from react.api.types import *
 
 MAX_BEAVERS = 3
+MAX_X = 80
+MAX_Y = 25
 
 """
   Records
@@ -86,5 +88,19 @@ class SetVel(CtrlEv):
     def handler(self):
         self._beaver.v_x = self.vx
         self._beaver.v_y = self.vy
+
+class RedirectBeaverWheneverHitsTheWall(Event):
+    receiver = { "sim": BeaverSim }
+
+    def whenever(self):
+        def filter_func(beaver):
+            not (0 < beaver.pos_x < MAX_X and 0 < beaver.pos_y < MAX_Y)
+        self.outside_beavers = filter(filter_func, self.sim.beavers)
+        return len(self.outside_beavers) > 0
+
+    def handler(self):
+        for beaver in self.outside_beavers:
+            if not 0 < beaver.pos_x < MAX_X: beaver.v_x = -beaver.v_x
+            if not 0 < beaver.pos_y < MAX_Y: beaver.v_y = -beaver.v_y
 
 #import pdb; pdb.set_trace()

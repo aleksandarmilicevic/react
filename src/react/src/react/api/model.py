@@ -162,7 +162,11 @@ class Event(ReactObj):
 
     def get_sender(self):   return self.get_field("sender")
     def get_receiver(self): return self.get_field("receiver")
-    def guard(self):        return None
+    def guard(self):
+        if hasattr(self, "whenever"):
+            return self.whenever()
+        else:
+            return None
     def handler(self):      return None
 
     def get_field(self, fname):

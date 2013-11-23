@@ -95,12 +95,14 @@ class ReactNode(object, ListenerHelper):
     def get_srv_handler(self, srv_name, func, log=True):
         def srv_handler(req):
             if log: conf.debug("*** %s *** request received\n%s", srv_name, req)
-            resp = func(req)
-            if log: conf.debug("Sending back resp:\n%s", resp)
-            if log: conf.debug("--------------------------\n")
-            return resp
+            try:
+                resp = func(req)
+                if log: conf.debug("Sending back resp:\n%s", resp)
+                return resp
+            except Exception as e:
+                conf.error("Could not process %s handler:\n%s" % (srv_name, e))
+                return None
         return srv_handler
-
 
 #########################################################################################
 
