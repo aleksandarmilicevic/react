@@ -3,6 +3,7 @@ import beaversim
 from beaversim import gui
 import thread
 
+from react import meta
 from react.api.model import *
 from react.api.terminals import *
 from react.api.types import *
@@ -89,18 +90,29 @@ class SetVel(CtrlEv):
         self._beaver.v_x = self.vx
         self._beaver.v_y = self.vy
 
-class RedirectBeaverWheneverHitsTheWall(Event):
+# ----------------------------------------------------
+# Redirect beavers whenever outside the bounding box
+
+class RedirectBeaver(WheneverEvent):
     receiver = { "sim": BeaverSim }
+    beaver   = Beaver
 
-    def whenever(self):
-        def filter_func(beaver):
-            not (0 < beaver.pos_x < MAX_X and 0 < beaver.pos_y < MAX_Y)
-        self.outside_beavers = filter(filter_func, self.sim.beavers)
-        return len(self.outside_beavers) > 0
+    @classmethod
+    def instantiate(cls, rec):
+        return map(lambda b: cls(beaver=b, receiver=rec), rec.beavers)
 
-    def handler(self):
-        for beaver in self.outside_beavers:
-            if not 0 < beaver.pos_x < MAX_X: beaver.v_x = -beaver.v_x
-            if not 0 < beaver.pos_y < MAX_Y: beaver.v_y = -beaver.v_y
+class RedirectBeaverL(RedirectBeaver):
+    def whenever(self): return self.beaver.pos_x < 0
+    def handler(self):  self.beaver.pos_x = 0; self.beaver.v_x = -self.beaver.v_x
 
-#import pdb; pdb.set_trace()
+class RedirectBeaverR(RedirectBeaver):
+    def whenever(self): return self.beaver.pos_x > MAX_X
+    def handler(self):  self.beaver.pos_x = MAX_X; self.beaver.v_x = -self.beaver.v_x
+
+class RedirectBeaverT(RedirectBeaver):
+    def whenever(self): return self.beaver.pos_y < 0
+    def handler(self):  self.beaver.pos_y = 0; self.beaver.v_y = -self.beaver.v_y
+
+class RedirectBeaverB(RedirectBeaver):
+    def whenever(self): return self.beaver.pos_y > MAX_Y
+    def handler(self):  self.beaver.pos_y = MAX_Y; self.beaver.v_y = -self.beaver.v_y

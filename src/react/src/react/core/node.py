@@ -63,6 +63,19 @@ class ReactNode(object, ListenerHelper):
                                         react.srv.EventSrv)
             ev_srv(req.event)
 
+    def trigger_whenever_events(self, ev):
+        receiver = ev.get_receiver()
+        receiver_cls = receiver.meta().cls()
+        wh_ev_metas = react.meta.find_whenever_events(receiver_cls)
+        conf.debug("found whenever events for %s machine: %s", receiver_cls, wh_ev_metas)
+        wh_events = reduce(lambda l1, l2: l1 + l2,
+                           map(lambda wh_ev_meta: wh_ev_meta.cls().instantiate(receiver),
+                               wh_ev_metas))
+        wh_evs = filter(lambda wh_ev: wh_ev.whenever(), wh_events)
+        conf.debug("scheduling %d whenever events: %s", len(wh_evs), wh_evs)
+        for wh_ev in wh_evs:
+            events.call_event_service(wh_ev)
+
     def execute_event_req(self, req, forward=True):
         ev = ser.deserialize_objval(req.event)
         guard_msg = ev.guard()
@@ -73,6 +86,7 @@ class ReactNode(object, ListenerHelper):
             try:
                 self.reg_lstner()
                 result = ev.handler()
+                self.trigger_whenever_events(ev)
             finally:
                 self.unreg_lstner()
         else:

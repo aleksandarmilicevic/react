@@ -1,4 +1,6 @@
 import copy
+import react
+from react.api import types
 
 _m1_empty = {
     "record": {},
@@ -26,6 +28,12 @@ def add(kind, rmeta):
 def add_record(rmeta):  add("record", rmeta)
 def add_machine(rmeta): add("machine", rmeta)
 def add_event(rmeta):   add("event", rmeta)
+
+def find_whenever_events(receiver_machine_cls):
+    def whenever_filter_func(ev_meta):
+        return types.issubtype(ev_meta.receiver(), receiver_machine_cls) and hasattr(ev_meta.cls(), "whenever")
+
+    return filter(whenever_filter_func, _get_dct_for("event").values())
 
 def reset():
     global _m1

@@ -30,6 +30,8 @@ class Type(object):
     @abc.abstractmethod
     def default_value(self): pass
 
+    def cls(self): return None
+
     def is_unary(self):     return self.arity() == 1
     def is_scalar(self):    return True
     def is_primitive(self): return False
@@ -145,3 +147,11 @@ class DictType(ProductType):
 def setof(t):    return SetType(t)
 def listof(t):   return ListType(t)
 def dictof(k,v): return DictType(k, v)
+
+def issubtype(t1, t2):
+    if t1 is None: return False
+    if t2 is None: return False
+    c1 = t1 if isinstance(t1, type) else t1.cls()
+    c2 = t2 if isinstance(t2, type) else t2.cls()
+    return issubclass(c1, c2)
+

@@ -162,7 +162,10 @@ class Event(ReactObj):
     def get_receiver(self): return self.get_field("receiver")
     def guard(self):
         if hasattr(self, "whenever"):
-            return self.whenever()
+            if self.whenever():
+                return None
+            else:
+                return "whenever condition not met"
         else:
             return None
     def handler(self):      return None
@@ -178,3 +181,8 @@ class Event(ReactObj):
         if fname == "sender":     call_super(self.meta().sender_fld_name(), fvalue)
         elif fname == "receiver": call_super(self.meta().receiver_fld_name(), fvalue)
         else:                     call_super(fname, fvalue)
+
+class WheneverEvent(Event):
+    @classmethod
+    def instantiate(cls, receiver):
+        return [cls(receiver=receiver)]
