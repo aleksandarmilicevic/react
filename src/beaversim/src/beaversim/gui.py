@@ -41,6 +41,7 @@ class BeaverSimCurses(object):
         self.refresh()
 
     def draw(self, draw_spec):
+        conf.trace("called draw for %d specs" % len(draw_spec))
         self.win.clear()
         for name, x, y, color in draw_spec:
             if x >= 0 and y >= 0 and x < W and y < H:

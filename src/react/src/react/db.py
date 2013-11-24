@@ -32,14 +32,14 @@ def add(kind, robj):
 
 def add_record(robj):   add("record", robj)
 def add_machine(robj):  add("machine", robj)
-def add_event(robj):    add("event", robj)
+def add_event(robj):    pass #add("event", robj)
 
 def delete(kind, robj):
     _m2[kind].pop(robj.id())
 
 def del_record(robj):   delete("record", robj)
 def del_machine(robj):  delete("machine", robj)
-def del_event(robj):    delete("event", robj)
+def del_event(robj):    pass #delete("event", robj)
 
 def reset():
     global _m2

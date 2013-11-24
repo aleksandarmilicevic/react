@@ -142,12 +142,6 @@ class ReactObj(object):
         for fname, ftype in self.meta().fields().iteritems():
             self.set_field(fname, ftype.default_value())
 
-
-def new_react_cls(__name, __bases, **fields):
-    cls = type(__name, __bases, {})
-    cls.fields(**fields)
-    return cls
-
 class Record(ReactObj):
     @classmethod
     def is_record(cls): return True
@@ -159,6 +153,10 @@ class Machine(ReactObj):
 class Event(ReactObj):
     @classmethod
     def is_event(cls): return True
+
+    @classmethod
+    def find_or_new(cls, id):
+        return cls()
 
     def get_sender(self):   return self.get_field("sender")
     def get_receiver(self): return self.get_field("receiver")
@@ -180,8 +178,3 @@ class Event(ReactObj):
         if fname == "sender":     call_super(self.meta().sender_fld_name(), fvalue)
         elif fname == "receiver": call_super(self.meta().receiver_fld_name(), fvalue)
         else:                     call_super(fname, fvalue)
-
-def record(__name, **fields):  return new_react_cls(__name, (Record,), **fields)
-def machine(__name, **fields): return new_react_cls(__name, (Machine,), **fields)
-def event(__name, **fields):   return new_react_cls(__name, (Event,), **fields)
-

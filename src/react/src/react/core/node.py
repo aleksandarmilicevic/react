@@ -3,27 +3,25 @@ import copy
 import rospy
 import react
 import sys
+import traceback
 from react import conf
 from react import meta
 from react import msg
 from react import srv
 from react.core import serialization as ser
+from react.core import events
+from react.core.events import *
 from react.core.scheduler import Scheduler
 from react.core import cli
+from react.utils import curry
 from react.helpers.listener_helper import ListenerHelper
 import thread
 import ast
 
 #########################################################################################
 
-def node_name(machine):
-    return "%s_%s" % (machine.meta().name(), machine.id())
-
 def push_srv_name(machine):
     return "%s_%s" % (react.core.PUSH_SRV_NAME, node_name(machine))
-
-def event_srv_name(machine):
-    return "%s_%s" % (react.core.EVENT_SRV_NAME, node_name(machine))
 
 def in_thread(fun, opt):
     if opt == conf.E_THR_OPT.FALSE:
@@ -66,20 +64,26 @@ class ReactNode(object, ListenerHelper):
             ev_srv(req.event)
 
     def execute_event_req(self, req, forward=True):
+        conf.trace("executing event req %s", req.event.ref.cls_name)
         ev = ser.deserialize_objval(req.event)
+        conf.trace("deserialized %s into %s", req.event.ref.cls_name, ev)
         guard_msg = ev.guard()
+        conf.trace("guard of %s executed: %s", ev, guard_msg)
         status = "ok"
         if guard_msg is None:
-            if forward:
-                self.forward_event_req(req, ev)
+            # if forward:
+            #     self.forward_event_req(req, ev)
             try:
                 self.reg_lstner()
+                conf.trace("executing handler of %s", ev)
                 result = ev.handler()
+                conf.trace("handler executed of %s", ev)
             finally:
                 self.unreg_lstner()
         else:
             status = "guard failed"
             result = guard_msg
+        conf.trace("returning")
         return {
             "status": status,
             "result": ser.serialize_objref(result),
@@ -100,7 +104,8 @@ class ReactNode(object, ListenerHelper):
                 if log: conf.debug("Sending back resp:\n%s", resp)
                 return resp
             except Exception as e:
-                conf.error("Could not process %s handler:\n%s" % (srv_name, e))
+                conf.error("Could not process %s handler:\n%s\n%s",
+                           srv_name, e, traceback.format_exc())
                 return None
         return srv_handler
 
@@ -271,9 +276,6 @@ class ReactMachine(ReactNode):
               self._register_node()).  That will initialize
               a ROS node, and also start some services to allow
               ReactCore to talk to this node directly.
-
-          (2) creates and triggers the Register event from the Chat
-              system model.
         """
         try:
             self._register_node()
@@ -297,9 +299,9 @@ class ReactMachine(ReactNode):
             if hasattr(self.machine(), "on_start"):
                 self.machine().on_start()
 
-            for every_event_spec in self.machine().meta().timer_events():
-                self._scheduler.every(every_event_spec[1],
-                                      getattr(self.machine(), every_event_spec[0]))
+            for every_spec in self.machine().meta().timer_events():
+                self._scheduler.every(every_spec[1],
+                                      curry(self._trigger_machine_method, every_spec[0]))
 
             in_thread(self.cli_thr_func, conf.cli)
             in_thread(rospy.spin, conf.rospy_spin)
@@ -309,6 +311,13 @@ class ReactMachine(ReactNode):
 
     def my_push_srv_name(self):  return push_srv_name(self.machine())
     def my_event_srv_name(self): return event_srv_name(self.machine())
+
+    def _trigger_machine_method(self, method_name, *a, **kw):
+        machine = self.machine()
+        ev = events.CallReceiversMethod(sender              = machine,
+                                        receiver            = machine,
+                                        handler_method_name = method_name)
+        events.call_event_service(ev)
 
     def _on_exit(self):
         try:

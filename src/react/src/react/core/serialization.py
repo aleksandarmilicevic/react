@@ -1,4 +1,5 @@
 import react
+from react import conf
 from react.api import model
 from react import db
 from react import msg

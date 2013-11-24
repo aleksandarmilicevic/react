@@ -128,13 +128,13 @@ class EventMeta(RecordMeta):
         self._receiver_fld_name = None
         super(EventMeta, self).__init__(*args, **kwargs)
 
-    def sender_fld_name(self):   return self._find_attr("_sender_fld_name")
-    def receiver_fld_name(self): return self._find_attr("_receiver_fld_name")
-    def sender(self):            return self.field(self.sender_fld_name())
-    def receiver(self):          return self.field(self.receiver_fld_name())
+    def sender_fld_name(self):  return (self._find_attr("_sender_fld_name") or "sender")
+    def receiver_fld_name(self):return (self._find_attr("_receiver_fld_name") or "receiver")
+    def sender(self):           return self.field(self.sender_fld_name())
+    def receiver(self):         return self.field(self.receiver_fld_name())
 
     def _add_field(self, fname, ftype):
-        if fname == "sender" or fname == "receiver" or fname == "params":
+        if isinstance(ftype, dict) and fname in ["sender", "receiver", "params"]:
             self._ctx = fname
             self._iter_dct(ftype, self._add_field_ctx)
         else:
