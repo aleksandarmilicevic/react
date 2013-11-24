@@ -64,26 +64,20 @@ class ReactNode(object, ListenerHelper):
             ev_srv(req.event)
 
     def execute_event_req(self, req, forward=True):
-        conf.trace("executing event req %s", req.event.ref.cls_name)
         ev = ser.deserialize_objval(req.event)
-        conf.trace("deserialized %s into %s", req.event.ref.cls_name, ev)
         guard_msg = ev.guard()
-        conf.trace("guard of %s executed: %s", ev, guard_msg)
         status = "ok"
         if guard_msg is None:
             # if forward:
             #     self.forward_event_req(req, ev)
             try:
                 self.reg_lstner()
-                conf.trace("executing handler of %s", ev)
                 result = ev.handler()
-                conf.trace("handler executed of %s", ev)
             finally:
                 self.unreg_lstner()
         else:
             status = "guard failed"
             result = guard_msg
-        conf.trace("returning")
         return {
             "status": status,
             "result": ser.serialize_objref(result),
