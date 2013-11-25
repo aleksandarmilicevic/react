@@ -150,6 +150,12 @@ class Machine(ReactObj):
     @classmethod
     def is_machine(cls): return True
 
+    def trigger(self, ev):
+        ev.set_sender(self)
+        if ev.get_receiver() is None:
+            ev.set_receiver(react.core.events.find_implicit_receiver(type(ev)))
+        return react.core.events.call_event_service(ev)
+
 class Event(ReactObj):
     @classmethod
     def is_event(cls): return True
@@ -158,8 +164,11 @@ class Event(ReactObj):
     def find_or_new(cls, id):
         return cls()
 
-    def get_sender(self):   return self.get_field("sender")
-    def get_receiver(self): return self.get_field("receiver")
+    def get_sender(self):      return self.get_field("sender")
+    def get_receiver(self):    return self.get_field("receiver")
+    def set_sender(self, m):   return self.set_field("sender", m)
+    def set_receiver(self, m): return self.set_field("receiver", m)
+
     def guard(self):
         if hasattr(self, "whenever"):
             if self.whenever():

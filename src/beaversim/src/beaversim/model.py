@@ -1,5 +1,6 @@
-import sys
 import beaversim
+import sys
+import traceback
 from beaversim import gui
 import thread
 
@@ -8,7 +9,7 @@ from react.api.model import *
 from react.api.terminals import *
 from react.api.types import *
 
-MAX_BEAVERS = 3
+MAX_BEAVERS = 5
 MAX_X = 10
 MAX_Y = 10
 
@@ -35,16 +36,86 @@ class BeaverSim(Machine, CursesTerminal):
         self.term.stop()
 
     def every_1s(self):
-        draw_spec = [(b.name, b.pos_x, b.pos_y, 1) for b in self.beavers]
-        self.term.draw(draw_spec)
+        self.draw_beavers()
         for beaver in self.beavers:
             beaver.pos_x = beaver.pos_x + beaver.v_x
             beaver.pos_y = beaver.pos_y + beaver.v_y
 
-class RemoteCtrl(Machine):
-    pass
-        
+    def draw_beavers(self):
+        def fmap(idx):
+            b = self.beavers[idx]
+            return (str(idx), b.pos_x, b.pos_y, idx%7 + 1)
+        draw_spec = map(fmap, range(len(self.beavers)))
+        self.term.draw(draw_spec)
 
+
+class RemoteCtrl(Machine, CursesTerminal):
+    def on_start(self):
+        CursesTerminal.on_start(self)
+        self.cnt = 0
+        self.selected = None
+        self.draw_menu()
+        self.draw_selected()
+        self.refresh()
+        self.read_spin()
+
+    def on_KEY_0(self): self.select_beaver(0)
+    def on_KEY_1(self): self.select_beaver(1)
+    def on_KEY_2(self): self.select_beaver(2)
+    def on_KEY_3(self): self.select_beaver(3)
+    def on_KEY_4(self): self.select_beaver(4)
+    def on_KEY_5(self): self.select_beaver(5)
+        
+    def on_KEY_c(self):
+        self.cnt = self.cnt + 1
+        self.trigger(Spawn())
+
+    def on_KEY_UP(self):    self.trigger(ChangeSpeed(idx=self.selected, dx=0,  dy=-1))
+    def on_KEY_DOWN(self):  self.trigger(ChangeSpeed(idx=self.selected, dx=0,  dy=1))
+    def on_KEY_LEFT(self):  self.trigger(ChangeSpeed(idx=self.selected, dx=-1, dy=0))
+    def on_KEY_RIGHT(self): self.trigger(ChangeSpeed(idx=self.selected, dx=1,  dy=0))
+
+    def select_beaver(self, idx):
+        self.selected = idx;
+        self.draw_selected()
+        self.refresh()
+
+    def draw_menu(self):
+        self.stdscr.addstr(0, 1, "c         - create new beaver")
+        self.stdscr.addstr(1, 1, "0..5      - select beaver by name")
+        self.stdscr.addstr(2, 1, "key_up    - decrease vertical velocity")
+        self.stdscr.addstr(3, 1, "key_down  - increase vertical velocity")
+        self.stdscr.addstr(4, 1, "key_left  - decrease horizontal velocity")
+        self.stdscr.addstr(5, 1, "key_right - increase horizontal velocity")
+
+    def draw_selected(self):
+        self.stdscr.addstr(7, 1, "selected beaver:                     ")
+        self.stdscr.addstr(7, 1, "selected beaver: %s" % self.selected)
+
+    def draw_status(self, line1, line2=""):
+        self.stdscr.addstr(9, 1,  "                                                       ")
+        self.stdscr.addstr(10, 1, "                                                       ")
+        self.stdscr.addstr(9, 1,  str(line1))
+        self.stdscr.addstr(10, 1, str(line2))
+
+    def refresh(self):
+        self.stdscr.refresh()
+
+    def trigger(self, ev):
+        try:
+            resp = Machine.trigger(self, ev)
+            if resp.status == "guard failed":
+                self.draw_status("guard for event %s failed" % ev.meta().name(), 
+                                 resp.result.value)
+            else: 
+                self.draw_status("successfully executed %s event" % ev.meta().name())
+        except Exception as ex:
+            self.draw_status("error executing %s event" % ev.meta().name(), str(ex))
+            react.conf.error("Could not trigger %s event:\n%s",
+                             ev, traceback.format_exc())
+        finally:
+            self.refresh()
+            
 """
   Events
 """
@@ -57,11 +128,26 @@ class Spawn(CtrlEv):
     name     = str
 
     def guard(self):
-        len(self.sim.beavers) < MAX_BEAVERS
+        if not len(self.sim.beavers) < MAX_BEAVERS:
+            return "Too many beavers"
 
     def handler(self):
-        beaver = Beaver(name=self.name, pos_x=4, pos_y=4, v_x=1, v_y=1)
+        beaver = Beaver(name=self.name, pos_x=0, pos_y=0, v_x=1, v_y=0)
         self.sim.beavers.append(beaver)
+
+class ChangeSpeed(CtrlEv):
+    idx      = int
+    dx       = int
+    dy       = int
+
+    def guard(self):
+        if not 0 <= self.idx < len(self.sim.beavers):
+            return "beaver[%d] not ofund" % self.idx
+        self._beaver = self.sim.beavers[self.idx]
+
+    def handler(self):
+        self._beaver.v_x = self._beaver.v_x + self.dx
+        self._beaver.v_y = self._beaver.v_y + self.dy
 
 class SetPos(CtrlEv):
     name     = str

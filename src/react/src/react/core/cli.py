@@ -69,15 +69,8 @@ def cli_error(msg):
 def trigger_event(event_name, **event_params):
     ev_cls = meta.event(event_name).cls()
     if event_params.get("receiver") is None:
-        receiver_cls = ev_cls.meta().receiver().cls()
-        rec_candidates = filter(lambda m: isinstance(m, receiver_cls), react.db.machines())
-        if len(rec_candidates) == 0:
-            raise RuntimeError("no receiver specified for event %s" % event_name)
-        elif len(rec_candidates) > 1:
-            raise RuntimeError("multiple receiver candidates found for event %s: %s" % (event_name, rec_candidates))
-        else:
-            rec = rec_candidates[0]
-            print "Using implicit receiver: %s" % rec
-            event_params["receiver"] = rec
+        rec = events.find_implicit_receiver(ev_cls)
+        print "Using implicit receiver: %s" % rec
+        event_params["receiver"] = rec
     ev = ev_cls(**event_params)
     events.call_event_service(ev)
