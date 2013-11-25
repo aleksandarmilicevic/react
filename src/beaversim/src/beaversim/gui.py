@@ -2,17 +2,18 @@ import curses
 import react
 from react import conf
 
-W = 80
-H = 25
+LeftMargin = 3
+TopMargin = 1
 
 class BeaverSimCurses(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, width, height):
+        self.W = width
+        self.H = height
 
     def start(self):
         self.stdscr = curses.initscr()
-        self.win = self.stdscr
+        self.win = curses.newpad(self.H+1, self.W+1)
         curses.start_color()
         curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
         curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
@@ -25,6 +26,7 @@ class BeaverSimCurses(object):
         curses.cbreak()
         curses.curs_set(0)
         self.win.keypad(1)
+        self.draw_border()
 
     def stop(self):
         curses.nocbreak()
@@ -34,7 +36,26 @@ class BeaverSimCurses(object):
         curses.endwin()
 
     def refresh(self):
-        self.win.refresh()
+        self.win.refresh(0,0, TopMargin,LeftMargin, TopMargin+self.H-1,LeftMargin+self.W-1)
+
+    def draw_border(self):
+        t, l = (TopMargin-1, LeftMargin-1)
+        b, r = (TopMargin+self.H, LeftMargin+self.H)
+
+        self.stdscr.addch(t, l, curses.ACS_ULCORNER)
+        self.stdscr.addch(t, r, curses.ACS_URCORNER)
+        self.stdscr.addch(b, l, curses.ACS_LLCORNER)
+        self.stdscr.addch(b, r, curses.ACS_LRCORNER)
+
+        for y in range(t+1, b):
+            self.stdscr.addch(y, l, curses.ACS_VLINE)
+            self.stdscr.addch(y, r, curses.ACS_VLINE)
+
+        for x in range(l+1, r):
+            self.stdscr.addch(t, x, curses.ACS_HLINE)
+            self.stdscr.addch(b, x, curses.ACS_HLINE)
+        
+        self.stdscr.refresh()
 
     def clrscr(self):
         self.win.clear()
@@ -43,13 +64,13 @@ class BeaverSimCurses(object):
     def draw(self, draw_spec):
         self.win.clear()
         for name, x, y, color in draw_spec:
-            if x >= 0 and y >= 0 and x < W and y < H:
-                conf.trace("about to draw %s, %s, %s" % (type(y), type(x), type(name)))
+            if x >= 0 and y >= 0 and x < self.W and y < self.H:
+                conf.trace("about to draw %s, %s, %s" % (y,x,name))
                 self.win.addstr(y, x, name, curses.color_pair(color))
         self.refresh()
 
-def start():
-    gui = BeaverSimCurses()
+def start(width, height):
+    gui = BeaverSimCurses(width, height)
     gui.start()
     gui.clrscr()
     return gui

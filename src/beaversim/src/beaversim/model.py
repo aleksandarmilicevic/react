@@ -9,8 +9,8 @@ from react.api.terminals import *
 from react.api.types import *
 
 MAX_BEAVERS = 3
-MAX_X = 80
-MAX_Y = 25
+MAX_X = 10
+MAX_Y = 10
 
 """
   Records
@@ -29,20 +29,21 @@ class BeaverSim(Machine, CursesTerminal):
     beavers = listof(Beaver)
 
     def on_start(self):
-        self.term = gui.start()
+        self.term = gui.start(MAX_X, MAX_Y)
 
     def on_exit(self):
         self.term.stop()
 
     def every_1s(self):
+        draw_spec = [(b.name, b.pos_x, b.pos_y, 1) for b in self.beavers]
+        self.term.draw(draw_spec)
         for beaver in self.beavers:
             beaver.pos_x = beaver.pos_x + beaver.v_x
             beaver.pos_y = beaver.pos_y + beaver.v_y
-        draw_spec = [(b.name, b.pos_x, b.pos_y, 1) for b in self.beavers]
-        self.term.draw(draw_spec)
 
 class RemoteCtrl(Machine):
     pass
+        
 
 """
   Events
@@ -59,7 +60,7 @@ class Spawn(CtrlEv):
         len(self.sim.beavers) < MAX_BEAVERS
 
     def handler(self):
-        beaver = Beaver(name=self.name, pos_x=0, pos_y=0, v_x=1, v_y=0)
+        beaver = Beaver(name=self.name, pos_x=4, pos_y=4, v_x=1, v_y=1)
         self.sim.beavers.append(beaver)
 
 class SetPos(CtrlEv):
@@ -106,13 +107,13 @@ class RedirectBeaverL(RedirectBeaver):
     def handler(self):  self.beaver.pos_x = 0; self.beaver.v_x = -self.beaver.v_x
 
 class RedirectBeaverR(RedirectBeaver):
-    def whenever(self): return self.beaver.pos_x > MAX_X
-    def handler(self):  self.beaver.pos_x = MAX_X; self.beaver.v_x = -self.beaver.v_x
+    def whenever(self): return self.beaver.pos_x >= MAX_X
+    def handler(self):  self.beaver.pos_x = MAX_X-1; self.beaver.v_x = -self.beaver.v_x
 
 class RedirectBeaverT(RedirectBeaver):
     def whenever(self): return self.beaver.pos_y < 0
     def handler(self):  self.beaver.pos_y = 0; self.beaver.v_y = -self.beaver.v_y
 
 class RedirectBeaverB(RedirectBeaver):
-    def whenever(self): return self.beaver.pos_y > MAX_Y
-    def handler(self):  self.beaver.pos_y = MAX_Y; self.beaver.v_y = -self.beaver.v_y
+    def whenever(self): return self.beaver.pos_y >= MAX_Y
+    def handler(self):  self.beaver.pos_y = MAX_Y-1; self.beaver.v_y = -self.beaver.v_y
