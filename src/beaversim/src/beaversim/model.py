@@ -70,10 +70,14 @@ class RemoteCtrl(Machine, CursesTerminal):
         self.cnt = self.cnt + 1
         self.trigger(Spawn())
 
-    def on_KEY_UP(self):    self.trigger(ChangeSpeed(idx=self.selected, dx=0,  dy=-1))
-    def on_KEY_DOWN(self):  self.trigger(ChangeSpeed(idx=self.selected, dx=0,  dy=1))
-    def on_KEY_LEFT(self):  self.trigger(ChangeSpeed(idx=self.selected, dx=-1, dy=0))
-    def on_KEY_RIGHT(self): self.trigger(ChangeSpeed(idx=self.selected, dx=1,  dy=0))
+    def on_KEY_UP(self):    
+        self.trigger(ChangeSpeed(idx=self.selected, dx=0,  dy=-1))
+    def on_KEY_DOWN(self):  
+        self.trigger(ChangeSpeed(idx=self.selected, dx=0,  dy=1))
+    def on_KEY_LEFT(self):  
+        self.trigger(ChangeSpeed(idx=self.selected, dx=-1, dy=0))
+    def on_KEY_RIGHT(self): 
+        self.trigger(ChangeSpeed(idx=self.selected, dx=1,  dy=0))
 
     def select_beaver(self, idx):
         self.selected = idx;
@@ -87,20 +91,16 @@ class RemoteCtrl(Machine, CursesTerminal):
         self.stdscr.addstr(3, 1, "key_down  - increase vertical velocity")
         self.stdscr.addstr(4, 1, "key_left  - decrease horizontal velocity")
         self.stdscr.addstr(5, 1, "key_right - increase horizontal velocity")
-
     def draw_selected(self):
         self.stdscr.addstr(7, 1, "selected beaver:                     ")
         self.stdscr.addstr(7, 1, "selected beaver: %s" % self.selected)
-
     def draw_status(self, line1, line2=""):
         self.stdscr.addstr(9, 1,  "                                                       ")
         self.stdscr.addstr(10, 1, "                                                       ")
         self.stdscr.addstr(9, 1,  str(line1))
         self.stdscr.addstr(10, 1, str(line2))
-
     def refresh(self):
         self.stdscr.refresh()
-
     def trigger(self, ev):
         try:
             resp = Machine.trigger(self, ev)
@@ -122,7 +122,6 @@ class RemoteCtrl(Machine, CursesTerminal):
 class CtrlEv(Event):
     sender   = { "ctrl": RemoteCtrl }
     receiver = { "sim":  BeaverSim }
-
 
 class Spawn(CtrlEv):
     name     = str
@@ -148,6 +147,42 @@ class ChangeSpeed(CtrlEv):
     def handler(self):
         self._beaver.v_x = self._beaver.v_x + self.dx
         self._beaver.v_y = self._beaver.v_y + self.dy
+
+# ----------------------------------------------------
+# Redirect beavers whenever outside the bounding box
+
+class RedirectBeaver(WheneverEvent):
+    receiver = { "sim": BeaverSim }
+    beaver   = Beaver
+
+    @classmethod
+    def instantiate(cls, rec):
+        return map(lambda b: cls(beaver=b, receiver=rec), rec.beavers)
+
+class RedirectBeaverL(RedirectBeaver):
+    def whenever(self): return self.beaver.pos_x < 0
+    def handler(self):  
+        self.beaver.pos_x = 0
+        self.beaver.v_x = -self.beaver.v_x
+
+class RedirectBeaverR(RedirectBeaver):
+    def whenever(self): return self.beaver.pos_x >= MAX_X
+    def handler(self):  
+        self.beaver.pos_x = MAX_X-1
+        self.beaver.v_x = -self.beaver.v_x
+
+class RedirectBeaverT(RedirectBeaver):
+    def whenever(self): return self.beaver.pos_y < 0
+    def handler(self):  
+        self.beaver.pos_y = 0
+        self.beaver.v_y = -self.beaver.v_y
+
+class RedirectBeaverB(RedirectBeaver):
+    def whenever(self): return self.beaver.pos_y >= MAX_Y
+    def handler(self):  
+        self.beaver.pos_y = MAX_Y-1
+        self.beaver.v_y = -self.beaver.v_y
+
 
 class SetPos(CtrlEv):
     name     = str
@@ -177,29 +212,3 @@ class SetVel(CtrlEv):
         self._beaver.v_x = self.vx
         self._beaver.v_y = self.vy
 
-# ----------------------------------------------------
-# Redirect beavers whenever outside the bounding box
-
-class RedirectBeaver(WheneverEvent):
-    receiver = { "sim": BeaverSim }
-    beaver   = Beaver
-
-    @classmethod
-    def instantiate(cls, rec):
-        return map(lambda b: cls(beaver=b, receiver=rec), rec.beavers)
-
-class RedirectBeaverL(RedirectBeaver):
-    def whenever(self): return self.beaver.pos_x < 0
-    def handler(self):  self.beaver.pos_x = 0; self.beaver.v_x = -self.beaver.v_x
-
-class RedirectBeaverR(RedirectBeaver):
-    def whenever(self): return self.beaver.pos_x >= MAX_X
-    def handler(self):  self.beaver.pos_x = MAX_X-1; self.beaver.v_x = -self.beaver.v_x
-
-class RedirectBeaverT(RedirectBeaver):
-    def whenever(self): return self.beaver.pos_y < 0
-    def handler(self):  self.beaver.pos_y = 0; self.beaver.v_y = -self.beaver.v_y
-
-class RedirectBeaverB(RedirectBeaver):
-    def whenever(self): return self.beaver.pos_y >= MAX_Y
-    def handler(self):  self.beaver.pos_y = MAX_Y-1; self.beaver.v_y = -self.beaver.v_y

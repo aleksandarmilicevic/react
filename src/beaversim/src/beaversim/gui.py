@@ -66,7 +66,7 @@ class BeaverSimCurses(object):
         for name, x, y, color in draw_spec:
             if x >= 0 and y >= 0 and x < self.W and y < self.H:
                 conf.trace("about to draw %s, %s, %s" % (y,x,name))
-                self.win.addstr(y, x, name, curses.color_pair(color))
+                self.win.addstr(y, x, name, curses.color_pair(color) | curses.A_STANDOUT)
         self.refresh()
 
 def start(width, height):
