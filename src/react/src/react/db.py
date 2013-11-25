@@ -27,6 +27,9 @@ def event(id):    return _events()[id]
 def add(kind, robj): 
     _m2[kind][robj.id()] = robj
 
+def remove(kind, robj):
+    del _m2[kind][robj.id()]
+
 def add_record(robj):   add(_records(), robj)
 def add_machine(robj):  add(_machines(), robj)
 def add_event(robj):    add(_events(), robj)

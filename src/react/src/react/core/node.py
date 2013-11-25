@@ -9,6 +9,8 @@ from react import meta
 from react.core import cli
 import thread
 import ast
+import scheduler
+import time
 
 
 #########################################################################################
@@ -20,6 +22,8 @@ class ReactCore(object):
 
     def __init__(self):
         self._connected_nodes = dict()
+        self._node_response = dict()
+        self._scheduler = Scheduler()
 
     def start_core(self):
         rospy.init_node('reactcore')
@@ -41,6 +45,8 @@ class ReactCore(object):
                       react.srv.HeartbeatSrv,
                       self.get_srv_handler("heartbeat", self.heartbeat_handler))
 
+        print "initializing check heartbeat ..."
+        self._scheduler.every(5, self.check_heartbeat)
         try:
             thread.start_new_thread(self.commandInterface,())
             thread.start_new_thread(rospy.spin(),())
@@ -84,6 +90,7 @@ class ReactCore(object):
         machine = machine_cls()
         node_name = "%s_%s" % (machine.meta().name(), machine.id())
         self._connected_nodes[machine.id()] = node_name
+        self._node_response[machine.id()] = rospy.get_time()
 
         resp = {
             "this_machine": ser.serialize_objref(machine),
@@ -109,8 +116,23 @@ class ReactCore(object):
         resp = {
             "ok": True
             }
+        print req.machine
+        self._node_response[req.machine.obj_id] = rospy.get_time()
         return react.srv.HeartbeatSrvResponse(**resp)
 
+    def check_heartbeat(self):
+        print "checking"
+        dead_machines = []
+        for machineid in self._node_response:
+            if rospy.get_time() - self._node_response[machineid] > 5:
+                dead_machines.append(machineid)
+
+        for machineid in dead_machines:
+            print "Did not receive heartbeat from {0}. Disconnecting".format(machineid)
+            del self._node_response[machineid]
+            del self._connected_nodes[machineid]
+            react.db.remove("machine",react.db.machine(machineid))
+    
     def get_srv_handler(self, srv_name, func):
         def srv_handler(req):
             print "*** %s *** request received\n%s" % (srv_name, req)
@@ -157,8 +179,6 @@ class ReactNode(object):
         self._node_name = None
         self._other_machines = list()
         self._scheduler = Scheduler()
-        
-        #self._scheduler.every(1000, self._send_heartbeat)
 
     def machine_name(self):   return self._machine_name
     def machine(self):        return self._machine
