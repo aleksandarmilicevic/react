@@ -2,7 +2,7 @@ import curses
 import react
 from react import conf
 
-LeftMargin = 3
+LeftMargin = 50
 TopMargin = 1
 
 class BeaverSimCurses(object):
