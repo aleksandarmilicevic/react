@@ -40,7 +40,7 @@ class BeaverSimCurses(object):
 
     def draw_border(self):
         t, l = (TopMargin-1, LeftMargin-1)
-        b, r = (TopMargin+self.H, LeftMargin+self.H)
+        b, r = (TopMargin+self.H, LeftMargin+self.W)
 
         self.stdscr.addch(t, l, curses.ACS_ULCORNER)
         self.stdscr.addch(t, r, curses.ACS_URCORNER)

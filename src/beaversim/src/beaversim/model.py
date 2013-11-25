@@ -10,8 +10,8 @@ from react.api.terminals import *
 from react.api.types import *
 
 MAX_BEAVERS = 5
-MAX_X = 10
-MAX_Y = 10
+MAX_X = 25
+MAX_Y = 15
 
 """
   Records
