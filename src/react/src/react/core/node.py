@@ -17,6 +17,8 @@ from react.utils import curry
 from react.helpers.listener_helper import ListenerHelper
 import thread
 import ast
+import scheduler
+import time
 
 #########################################################################################
 
@@ -126,6 +128,8 @@ class ReactCore(ReactNode):
 
     def __init__(self):
         self._connected_nodes = dict()
+        self._node_response = dict()
+        self._scheduler = Scheduler()
 
     def start_core(self):
         rospy.init_node('reactcore')
@@ -150,6 +154,10 @@ class ReactCore(ReactNode):
                       react.srv.HeartbeatSrv,
                       self.get_srv_handler("heartbeat", self.heartbeat_handler, False))
 
+        if conf.heartbeat:
+            conf.log("scheduling check heartbeat ...")
+            self._scheduler.every(5, self.check_heartbeat)
+
         try:
             in_thread(self.cli_thr_func, conf.cli)
             in_thread(rospy.spin, conf.rospy_spin)
@@ -166,6 +174,7 @@ class ReactCore(ReactNode):
 
         machine = machine_cls()
         self._connected_nodes[machine.id()] = machine
+        self._node_response[machine.id()] = rospy.get_time()
 
         resp = {
             "this_machine": ser.serialize_objref(machine),
@@ -180,6 +189,7 @@ class ReactCore(ReactNode):
         """
         mid = req.machine.obj_id
         machine = self._connected_nodes.pop(mid, None)
+        self._node_response.pop(mid)
         if machine is None:
             conf.warn("Machine %s not found in the list of connected nodes" % req.machine)
         else:
@@ -207,8 +217,23 @@ class ReactCore(ReactNode):
         resp = {
             "ok": True
             }
+        conf.trace(req.machine)
+        self._node_response[req.machine.obj_id] = rospy.get_time()
         return react.srv.HeartbeatSrvResponse(**resp)
 
+    def check_heartbeat(self):
+        conf.log("checking for unresponsive machines")
+        dead_machines = []
+        for machineid in self._node_response:
+            if rospy.get_time() - self._node_response[machineid] > 5:
+                dead_machines.append(machineid)
+
+        for machineid in dead_machines:
+            conf.log("Did not receive heartbeat from {0}. Disconnecting".format(machineid))
+            self._node_response.pop(machineid)
+            self._connected_nodes.pop(machineid)
+            react.db.del_machine(react.db.machine(machineid))
+    
     def _get_other_machines(self, this_machine):
         """
         Returns a list of connected machines other than `this_machine'

@@ -11,7 +11,7 @@ import beaversim.gui
 from beaversim.model import *
 
 #conf.debug = conf.E_LOGGER.NULL
-conf.heartbeat = False
+conf.heartbeat = True
 
 def usage():
     return "usage:\n  rosrun beaversim %s <machine_name>" % sys.argv[0].split("/")[-1]
