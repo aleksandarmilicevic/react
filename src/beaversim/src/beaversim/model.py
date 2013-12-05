@@ -95,15 +95,15 @@ class RemoteCtrl(Machine, CursesTerminal):
         self.stdscr.addstr(3, 1, "key_down  - increase vertical velocity")
         self.stdscr.addstr(4, 1, "key_left  - decrease horizontal velocity")
         self.stdscr.addstr(5, 1, "key_right - increase horizontal velocity")
-        self.stdscr.addstr(5, 1, "q         - quit")
+        self.stdscr.addstr(6, 1, "q         - quit")
     def draw_selected(self):
-        self.stdscr.addstr(7, 1, "selected turtle:                     ")
-        self.stdscr.addstr(7, 1, "selected turtle: %s" % self.selected)
+        self.stdscr.addstr(8, 1, "selected turtle:                     ")
+        self.stdscr.addstr(8, 1, "selected turtle: %s" % self.selected)
     def draw_status(self, line1, line2=""):
-        self.stdscr.addstr(9, 1,  "                                                       ")
-        self.stdscr.addstr(10, 1, "                                                       ")
-        self.stdscr.addstr(9, 1,  str(line1))
-        self.stdscr.addstr(10, 1, str(line2))
+        self.stdscr.addstr(10, 1,  "                                                       ")
+        self.stdscr.addstr(11, 1, "                                                       ")
+        self.stdscr.addstr(10, 1,  str(line1))
+        self.stdscr.addstr(11, 1, str(line2))
     def refresh(self):
         self.stdscr.refresh()
     def trigger(self, ev):
