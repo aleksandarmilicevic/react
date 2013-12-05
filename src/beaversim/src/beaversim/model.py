@@ -1,17 +1,18 @@
 import beaversim
+import random
 import sys
-import traceback
-from beaversim import gui
 import thread
+import traceback
 
+from beaversim import gui
 from react import meta
 from react.api.model import *
 from react.api.terminals import *
 from react.api.types import *
 
 MAX_BEAVERS = 5
-MAX_X = 25
-MAX_Y = 15
+MAX_X = 80
+MAX_Y = 22
 
 """
   Records
@@ -65,6 +66,9 @@ class RemoteCtrl(Machine, CursesTerminal):
     def on_KEY_3(self): self.select_beaver(3)
     def on_KEY_4(self): self.select_beaver(4)
     def on_KEY_5(self): self.select_beaver(5)
+
+    def on_KEY_q(self):
+        self.exit()
         
     def on_KEY_c(self):
         self.cnt = self.cnt + 1
@@ -85,15 +89,16 @@ class RemoteCtrl(Machine, CursesTerminal):
         self.refresh()
 
     def draw_menu(self):
-        self.stdscr.addstr(0, 1, "c         - create new beaver")
-        self.stdscr.addstr(1, 1, "0..5      - select beaver by name")
+        self.stdscr.addstr(0, 1, "c         - create new turtle")
+        self.stdscr.addstr(1, 1, "0..5      - select turtle by index")
         self.stdscr.addstr(2, 1, "key_up    - decrease vertical velocity")
         self.stdscr.addstr(3, 1, "key_down  - increase vertical velocity")
         self.stdscr.addstr(4, 1, "key_left  - decrease horizontal velocity")
         self.stdscr.addstr(5, 1, "key_right - increase horizontal velocity")
+        self.stdscr.addstr(5, 1, "q         - quit")
     def draw_selected(self):
-        self.stdscr.addstr(7, 1, "selected beaver:                     ")
-        self.stdscr.addstr(7, 1, "selected beaver: %s" % self.selected)
+        self.stdscr.addstr(7, 1, "selected turtle:                     ")
+        self.stdscr.addstr(7, 1, "selected turtle: %s" % self.selected)
     def draw_status(self, line1, line2=""):
         self.stdscr.addstr(9, 1,  "                                                       ")
         self.stdscr.addstr(10, 1, "                                                       ")
@@ -128,10 +133,14 @@ class Spawn(CtrlEv):
 
     def guard(self):
         if not len(self.sim.beavers) < MAX_BEAVERS:
-            return "Too many beavers"
+            return "Too many turtles"
 
     def handler(self):
-        beaver = Beaver(name=self.name, pos_x=0, pos_y=0, v_x=1, v_y=0)
+        beaver = Beaver(name  = self.name, 
+                        pos_x = random.randint(0, MAX_X), 
+                        pos_y = random.randint(0, MAX_Y), 
+                        v_x   = random.randint(-1, 1), 
+                        v_y   = random.randint(-1, 1))
         self.sim.beavers.append(beaver)
 
 class ChangeSpeed(CtrlEv):
@@ -141,7 +150,7 @@ class ChangeSpeed(CtrlEv):
 
     def guard(self):
         if not 0 <= self.idx < len(self.sim.beavers):
-            return "beaver[%d] not ofund" % self.idx
+            return "turtle[%d] not found" % self.idx
         self._beaver = self.sim.beavers[self.idx]
 
     def handler(self):
@@ -191,7 +200,7 @@ class SetPos(CtrlEv):
 
     def guard(self):
         beavers = Beaver.where(name=self.name)
-        if not beavers: return "Beaver %s not found" % self.name
+        if not beavers: return "Turtle %s not found" % self.name
         self._beaver = beavers[0]
 
     def handler(self):
@@ -205,7 +214,7 @@ class SetVel(CtrlEv):
 
     def guard(self):
         beavers = Beaver.where(name=self.name)
-        if not beavers: return "Beaver with name %s not found" % self.name
+        if not beavers: return "Trutle with name %s not found" % self.name
         self._beaver = beavers[0]
 
     def handler(self):
