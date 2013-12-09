@@ -2,7 +2,7 @@ import curses
 import react
 from react import conf
 
-WIN_WIDTH = 126
+WIN_WIDTH = 200
 WIN_HEIGTH = 30
 
 class BeaverSimCurses(object):
@@ -57,7 +57,7 @@ class BeaverSimCurses(object):
         for x in range(l+1, r):
             self.stdscr.addch(t, x, curses.ACS_HLINE)
             self.stdscr.addch(b, x, curses.ACS_HLINE)
-        
+
         self.stdscr.refresh()
 
     def clrscr(self):
