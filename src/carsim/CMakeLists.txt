@@ -1,16 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(beaversim)
+project(carsim)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  react
   rospy
   std_msgs
-  rqt_gui
-  rqt_gui_py
-  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -20,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-catkin_python_setup()
+# catkin_python_setup()
 
 #######################################
 ## Declare ROS messages and services ##
@@ -57,8 +53,8 @@ catkin_python_setup()
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES beaversim
-CATKIN_DEPENDS react rospy std_msgs rqt_gui rqt_gui_py message_runtime 
+#  LIBRARIES carsim
+#  CATKIN_DEPENDS rospy std_msgs
 #  DEPENDS system_lib
 )
 
@@ -74,19 +70,19 @@ include_directories(
 )
 
 ## Declare a cpp library
-# add_library(beaversim
-#   src/${PROJECT_NAME}/beaversim.cpp
+# add_library(carsim
+#   src/${PROJECT_NAME}/carsim.cpp
 # )
 
 ## Declare a cpp executable
-# add_executable(beaversim_node src/beaversim_node.cpp)
+# add_executable(carsim_node src/carsim_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(beaversim_node beaversim_generate_messages_cpp)
+# add_dependencies(carsim_node carsim_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(beaversim_node
+# target_link_libraries(carsim_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -97,8 +93,8 @@ include_directories(
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 
-## Mark executable scripts (Python etc.) for installation
-## in contrast to setup.py, you can choose the destination
+# Mark executable scripts (Python etc.) for installation
+# in contrast to setup.py, you can choose the destination
 install(PROGRAMS
   scripts/react_core.py
   scripts/react_machine.py
@@ -106,7 +102,7 @@ install(PROGRAMS
 )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS beaversim beaversim_node
+# install(TARGETS carsim carsim_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -132,7 +128,7 @@ install(FILES
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_beaversim.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_carsim.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
