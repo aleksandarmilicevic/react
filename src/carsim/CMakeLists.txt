@@ -5,8 +5,12 @@ project(carsim)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  react
   rospy
   std_msgs
+  rqt_gui
+  rqt_gui_py
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -16,7 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+catkin_python_setup()
 
 #######################################
 ## Declare ROS messages and services ##
@@ -54,7 +58,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES carsim
-#  CATKIN_DEPENDS rospy std_msgs
+CATKIN_DEPENDS react rospy std_msgs rqt_gui rqt_gui_py message_runtime 
 #  DEPENDS system_lib
 )
 
