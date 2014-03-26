@@ -2,14 +2,17 @@ import curses
 import react
 from react import conf
 
-LeftMargin = 50
-TopMargin = 1
+WIN_WIDTH = 126
+WIN_HEIGTH = 30
 
 class BeaverSimCurses(object):
 
     def __init__(self, width, height):
         self.W = width
         self.H = height
+        self.margin_left = (WIN_WIDTH - width)/2
+        self.margin_top = (WIN_HEIGTH - height)/2
+        self._prev_spec = []
 
     def start(self):
         self.stdscr = curses.initscr()
@@ -36,11 +39,11 @@ class BeaverSimCurses(object):
         curses.endwin()
 
     def refresh(self):
-        self.win.refresh(0,0, TopMargin,LeftMargin, TopMargin+self.H-1,LeftMargin+self.W-1)
+        self.win.refresh(0,0, self.margin_top,self.margin_left, self.margin_top+self.H-1,self.margin_left+self.W-1)
 
     def draw_border(self):
-        t, l = (TopMargin-1, LeftMargin-1)
-        b, r = (TopMargin+self.H, LeftMargin+self.W)
+        t, l = (self.margin_top-1, self.margin_left-1)
+        b, r = (self.margin_top+self.H, self.margin_left+self.W)
 
         self.stdscr.addch(t, l, curses.ACS_ULCORNER)
         self.stdscr.addch(t, r, curses.ACS_URCORNER)
@@ -62,12 +65,18 @@ class BeaverSimCurses(object):
         self.refresh()
 
     def draw(self, draw_spec):
-        self.win.clear()
-        for name, x, y, color in draw_spec:
-            if x >= 0 and y >= 0 and x < self.W and y < self.H:
-                conf.trace("about to draw %s, %s, %s" % (y,x,name))
-                self.win.addstr(y, x, name, curses.color_pair(color) | curses.A_STANDOUT)
+        # self.win.clear()
+        self._draw_spec(self._prev_spec, curses.ACS_BULLET, curses.A_BOLD)
+        self._draw_spec(draw_spec, None, curses.A_STANDOUT | curses.A_BOLD)
+        self._prev_spec = draw_spec
         self.refresh()
+
+    def _draw_spec(self, spec, ch=None, attrs=0):
+        for bname, x, y, color in spec:
+            if x >= 0 and y >= 0 and x < self.W and y < self.H:
+                name = ch or bname
+                # conf.trace("about to draw %s, %s, %s" % (y,x,name))
+                self.win.addch(y, x, name, curses.color_pair(color) | attrs)
 
 def start(width, height):
     gui = BeaverSimCurses(width, height)

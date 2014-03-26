@@ -1,4 +1,6 @@
 import copy
+import thread
+
 from .metamodel import *
 from react import db
 from react.api.wrappers import *
@@ -149,6 +151,9 @@ class Record(ReactObj):
 class Machine(ReactObj):
     @classmethod
     def is_machine(cls): return True
+
+    def exit(self):
+        thread.interrupt_main()
 
     def trigger(self, ev):
         ev.set_sender(self)
