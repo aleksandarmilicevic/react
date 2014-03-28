@@ -70,6 +70,8 @@ class ReactNode(object, ListenerHelper):
         receiver_cls = receiver.meta().cls()
         wh_ev_metas = react.meta.find_whenever_events(receiver_cls)
         conf.debug("found whenever events for %s machine: %s", receiver_cls, wh_ev_metas)
+        if wh_ev_metas == []:
+            return None
         wh_events = reduce(lambda l1, l2: l1 + l2,
                            map(lambda wh_ev_meta: wh_ev_meta.cls().instantiate(receiver),
                                wh_ev_metas))

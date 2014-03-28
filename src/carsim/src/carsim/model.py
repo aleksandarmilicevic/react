@@ -23,30 +23,35 @@ class CarData(Record):
 
 """
   Machines
-"""
-class Master(Machine):
-    cars = dict
-
-    def every_1s(self):
-        for carName in self.cars:
-            self.trigger(UpdateSensor({"sender": self, "receiver": self.cars[carName]}))
-
-            
+"""            
 class Car(Machine):
     data = CarData
     closeCars = listof(CarData)
 
     def on_start(self):
-        self.trigger(Register,{"sender": self, "receiver": Master, "name": data.name,
-                               "pos_x": data.pos_x, "pos_y": data.pos_y, "v_x": data.v_x, "v_y": data.v_y})
+        self.data = CarData(name="car",pos_x=0,pos_y=0,v_x=0,v_y=0)
+        self.trigger(Register(sender= self, data = self.data))
     
-    def every_1s(self):
+    def eevery_1s(self):
         self.data.pos_x = self.data.pos_x + self.data.v_x
         self.data.pos_y = self.data.pos_y + self.data.v_y
         self.trigger(UpdatePosition())
 
     ##TODO: unreg
     
+
+class Master(Machine):
+    cars = listof(Car)
+
+    def on_start(self):
+        self.cars = []
+        #print self
+        #print self.cars
+    
+    def every_1s(self):
+        for car in self.cars:
+            self.trigger(UpdateSensor(sender=self, receiver=car, cars = self.cars))
+
 
 
 """
@@ -55,18 +60,18 @@ class Car(Machine):
 class Register(Event):
     sender   = { "car": Car }
     receiver = { "master": Master }
-    name     = str
-    pos_x  = int
-    pos_y  = int
-    v_x    = int
-    v_y    = int
+    data = CarData
+
 
     def guard(self):
-        if self.name in [car.name for car in Car.all()]: return "Name taken"
+        return None
+        #if self.data.name in [car.data.name for car in Car.all()]: return "Name taken"
 
     def handler(self):
-        self.car.data = CarData(name = self.name, pos_x = self.pos_x, pos_y = self.pos_y, v_x = self.v_x, v_y = self.pos_y)
-        self.master.cars[self.car.data.name] = self.car
+        #print "1"
+        self.car.data = self.data
+        #print "2"
+        self.master.cars.append(self.car)
         return self.car
 
 class UpdatePosition(Event):
@@ -77,21 +82,27 @@ class UpdatePosition(Event):
         pass
 
     def handler(self):
-        self.master.cars[self.car.data.name] = self.car
+        for car in self.master.cars:
+            if car.id() == self.car.id():
+                car = self.car
         return self.car
 
 class UpdateSensor(Event):
     sender   = { "master": Master }
     receiver = { "car": Car }
+    cars = listof(Car)
+    
 
     def guard(self):
         pass
 
+    #move computation to master
     def handler(self):
         closeCars = []
-        for carName in self.master.cars:
-            if abs(self.car.data.pos_x - self.master.cars[carName].data.pos_x) <= 5:
-                if abs(self.car.data.pos_y - self.master.cars[carName].data.pos_y) <= 5:
-                    closeCars.append(self.master.cars[carName].data)
+        for otherCar in self.cars:
+            print otherCar
+            if abs(self.car.data.pos_x - otherCar.data.pos_x) <= 5:
+                if abs(self.car.data.pos_y - otherCar.data.pos_y) <= 5:
+                    closeCars.append(otherCar.data)
         self.car.closeCars = closeCars
         return closeCars
