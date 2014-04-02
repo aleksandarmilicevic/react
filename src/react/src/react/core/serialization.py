@@ -6,17 +6,39 @@ from react import msg
 from react import meta
 from react.api.wrappers import unwrap
 
+def to_refx(obj_ref):
+    return react.msg.ObjRefMsgX(kind     = obj_ref.kind,
+                                cls_name = obj_ref.cls_name,
+                                obj_id   = obj_ref.obj_id,
+                                value    = obj_ref.value)
+
+def from_refx(obj_refx):
+    return react.msg.ObjRefMsg(kind     = obj_refx.kind,
+                               cls_name = obj_refx.cls_name,
+                               obj_id   = obj_refx.obj_id,
+                               value    = obj_refx.value,
+                               elems    = [])
+
+
 def serialize_objref(robj):
     if isinstance(robj, react.api.model.ReactObj):
         return react.msg.ObjRefMsg(kind      = robj.meta().cls().kind(),
                                    cls_name  = robj.meta().name(),
                                    obj_id    = robj.id(),
-                                   value     = "")
+                                   value     = "",
+                                   elems     = [])
+    elif isinstance(robj, list):
+        return react.msg.ObjRefMsg(kind      = "list",
+                                   cls_name  = "list",
+                                   obj_id    = -1,
+                                   value     = "",
+                                   elems     = map(lambda o: to_refx(serialize_objref(o)), robj))
     else:
         return react.msg.ObjRefMsg(kind      = "primitive",
                                    cls_name  = type(robj).__name__,
                                    obj_id    = -1,
-                                   value     = str(robj))
+                                   value     = str(robj),
+                                   elems     = [])
 
 def serialize_objval(robj):
     objref = serialize_objref(robj)
@@ -33,6 +55,8 @@ def deserialize_objref(objref_msg):
         else:
             cls = __builtins__[objref_msg.cls_name]
             return cls(objref_msg.value)
+    elif objref_msg.kind == "list":
+        return map(lambda m: deserialize_objref(from_refx(m)), objref_msg.elems)
     else:
         cls_meta = meta.find(objref_msg.kind, objref_msg.cls_name)
         return cls_meta.cls().find_or_new(objref_msg.obj_id)

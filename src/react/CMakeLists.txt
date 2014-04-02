@@ -27,6 +27,7 @@ catkin_python_setup()
 add_message_files(
   FILES
   ObjRefMsg.msg
+  ObjRefMsgX.msg
   ObjValMsg.msg
   FldUpdateMsg.msg
 )

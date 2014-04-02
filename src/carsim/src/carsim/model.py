@@ -23,7 +23,7 @@ class CarData(Record):
 
 """
   Machines
-"""            
+"""
 class Car(Machine):
     data = CarData
     closeCars = listof(CarData)
@@ -31,14 +31,14 @@ class Car(Machine):
     def on_start(self):
         self.data = CarData(name="car",pos_x=0,pos_y=0,v_x=0,v_y=0)
         self.trigger(Register(sender= self, data = self.data))
-    
+
     def eevery_1s(self):
         self.data.pos_x = self.data.pos_x + self.data.v_x
         self.data.pos_y = self.data.pos_y + self.data.v_y
         self.trigger(UpdatePosition())
 
     ##TODO: unreg
-    
+
 
 class Master(Machine):
     cars = listof(Car)
@@ -47,7 +47,7 @@ class Master(Machine):
         self.cars = []
         #print self
         #print self.cars
-    
+
     def every_1s(self):
         for car in self.cars:
             self.trigger(UpdateSensor(sender=self, receiver=car, cars = self.cars))
@@ -91,16 +91,16 @@ class UpdateSensor(Event):
     sender   = { "master": Master }
     receiver = { "car": Car }
     cars = listof(Car)
-    
+
 
     def guard(self):
         pass
 
     #move computation to master
     def handler(self):
+        print "received %d close cars" % len(self.cars)
         closeCars = []
         for otherCar in self.cars:
-            print otherCar
             if abs(self.car.data.pos_x - otherCar.data.pos_x) <= 5:
                 if abs(self.car.data.pos_y - otherCar.data.pos_y) <= 5:
                     closeCars.append(otherCar.data)
