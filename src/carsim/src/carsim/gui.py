@@ -5,7 +5,7 @@ from react import conf
 LeftMargin = 50
 TopMargin = 1
 
-class BeaverSimCurses(object):
+class CarSimCurses(object):
 
     def __init__(self, width, height):
         self.W = width
@@ -70,7 +70,7 @@ class BeaverSimCurses(object):
         self.refresh()
 
 def start(width, height):
-    gui = BeaverSimCurses(width, height)
+    gui = CarSimCurses(width, height)
     gui.start()
     gui.clrscr()
     return gui

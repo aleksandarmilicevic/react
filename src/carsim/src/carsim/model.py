@@ -9,7 +9,9 @@ from react.api.model import *
 from react.api.terminals import *
 from react.api.types import *
 
-
+MAX_CARS = 5
+MAX_X = 80
+MAX_Y = 22
 """
   Records
 """
@@ -31,32 +33,132 @@ class Car(Machine):
     def on_start(self):
         self.data = CarData(name="car",pos_x=0,pos_y=0,v_x=0,v_y=0)
         self.trigger(Register(sender= self, data = self.data))
-
-    def eevery_1s(self):
+    
+    def every_1s(self):
         self.data.pos_x = self.data.pos_x + self.data.v_x
         self.data.pos_y = self.data.pos_y + self.data.v_y
         self.trigger(UpdatePosition())
 
     ##TODO: unreg
-
+    
 
 class Master(Machine):
     cars = listof(Car)
 
     def on_start(self):
         self.cars = []
+        self.term = gui.start(MAX_X, MAX_Y)
         #print self
         #print self.cars
 
+    def on_exit(self):
+        self.term.stop()
+    
     def every_1s(self):
+        self.draw_cars()
         for car in self.cars:
             self.trigger(UpdateSensor(sender=self, receiver=car, cars = self.cars))
 
+    def draw_cars(self):
+        def fmap(idx):
+            c = self.cars[idx]
+            return (str(idx), c.data.pos_x, c.data.pos_y, idx%7 + 1)
+        draw_spec = map(fmap, range(len(self.cars)))
+        self.term.draw(draw_spec)
 
+class RemoteCtrl(Machine, CursesTerminal):
+    def on_start(self):
+        CursesTerminal.on_start(self)
+        self.cnt = 0
+        self.selected = None
+        self.draw_menu()
+        self.draw_selected()
+        self.refresh()
+        self.read_spin()
+
+    def on_KEY_0(self): self.select_car(0)
+    def on_KEY_1(self): self.select_car(1)
+    def on_KEY_2(self): self.select_car(2)
+    def on_KEY_3(self): self.select_car(3)
+    def on_KEY_4(self): self.select_car(4)
+    def on_KEY_5(self): self.select_car(5)
+
+    def on_KEY_q(self):
+        self.exit()
+        
+    def on_KEY_c(self):
+        self.cnt = self.cnt + 1
+        self.trigger(Spawn())
+
+    
+    def on_KEY_UP(self):    
+        self.trigger(ChangeSpeed(idx=self.selected, dx=0,  dy=-1))
+    def on_KEY_DOWN(self):  
+        self.trigger(ChangeSpeed(idx=self.selected, dx=0,  dy=1))
+    def on_KEY_LEFT(self):  
+        self.trigger(ChangeSpeed(idx=self.selected, dx=-1, dy=0))
+    def on_KEY_RIGHT(self): 
+        self.trigger(ChangeSpeed(idx=self.selected, dx=1,  dy=0))
+
+    def select_car(self, idx):
+        self.selected = idx;
+        self.draw_selected()
+        self.refresh()
+
+    def draw_menu(self):
+        self.stdscr.addstr(0, 1, "c         - create new turtle")
+        self.stdscr.addstr(1, 1, "0..5      - select turtle by index")
+        self.stdscr.addstr(2, 1, "key_up    - decrease vertical velocity")
+        self.stdscr.addstr(3, 1, "key_down  - increase vertical velocity")
+        self.stdscr.addstr(4, 1, "key_left  - decrease horizontal velocity")
+        self.stdscr.addstr(5, 1, "key_right - increase horizontal velocity")
+        self.stdscr.addstr(5, 1, "q         - quit")
+    def draw_selected(self):
+        self.stdscr.addstr(7, 1, "selected turtle:                     ")
+        self.stdscr.addstr(7, 1, "selected turtle: %s" % self.selected)
+    def draw_status(self, line1, line2=""):
+        self.stdscr.addstr(9, 1,  "                                                       ")
+        self.stdscr.addstr(10, 1, "                                                       ")
+        self.stdscr.addstr(9, 1,  str(line1))
+        self.stdscr.addstr(10, 1, str(line2))
+    def refresh(self):
+        self.stdscr.refresh()
+    def trigger(self, ev):
+        try:
+            resp = Machine.trigger(self, ev)
+            if resp.status == "guard failed":
+                self.draw_status("guard for event %s failed" % ev.meta().name(), 
+                                 resp.result.value)
+            else: 
+                self.draw_status("successfully executed %s event" % ev.meta().name())
+        except Exception as ex:
+            self.draw_status("error executing %s event" % ev.meta().name(), str(ex))
+            react.conf.error("Could not trigger %s event:\n%s",
+                             ev, traceback.format_exc())
+        finally:
+            self.refresh()
 
 """
   Events
 """
+class CtrlEv(Event):
+    sender   = { "ctrl": RemoteCtrl }
+    receiver = { "master":  Master }
+
+class ChangeSpeed(CtrlEv):
+    idx      = int
+    dx       = int
+    dy       = int
+
+    def guard(self):
+        if not 0 <= self.idx < len(self.sim.beavers):
+            return "turtle[%d] not found" % self.idx
+        self._car = self.master.cars[self.idx]
+
+    def handler(self):
+        self._car.data.v_x = self._car.data.v_x + self.dx
+        self._car.data.v_y = self._car.data.v_y + self.dy
+
 class Register(Event):
     sender   = { "car": Car }
     receiver = { "master": Master }
@@ -91,16 +193,18 @@ class UpdateSensor(Event):
     sender   = { "master": Master }
     receiver = { "car": Car }
     cars = listof(Car)
-
+    
+    
 
     def guard(self):
         pass
 
     #move computation to master
     def handler(self):
-        print "received %d close cars" % len(self.cars)
         closeCars = []
         for otherCar in self.cars:
+            print otherCar
+            print otherCar.data.pos_x
             if abs(self.car.data.pos_x - otherCar.data.pos_x) <= 5:
                 if abs(self.car.data.pos_y - otherCar.data.pos_y) <= 5:
                     closeCars.append(otherCar.data)
