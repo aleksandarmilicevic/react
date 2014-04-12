@@ -1,0 +1,440 @@
+[LOG]   Requesting machine registration for machine BeaverSim
+[DEBUG] Received response: this_machine: 
+  kind: machine
+  cls_name: BeaverSim
+  obj_id: 1
+  value: ''
+  elems: []
+this_node_name: BeaverSim_1
+other_machines: []
+[LOG]   scheduling periodic hearbeat
+[LOG]   initializing push service
+[LOG]   initializing events service ...
+[LOG]   Requesting machine registration for machine BeaverSim
+[DEBUG] Received response: this_machine: 
+  kind: machine
+  cls_name: BeaverSim
+  obj_id: 3
+  value: ''
+  elems: []
+this_node_name: BeaverSim_3
+other_machines: []
+[LOG]   scheduling periodic hearbeat
+[LOG]   initializing push service
+[LOG]   initializing events service ...
+[LOG]   Requesting machine registration for machine BeaverSim
+[DEBUG] Received response: this_machine: 
+  kind: machine
+  cls_name: BeaverSim
+  obj_id: 1
+  value: ''
+  elems: []
+this_node_name: BeaverSim_1
+other_machines: []
+[LOG]   scheduling periodic hearbeat
+[LOG]   initializing push service
+[LOG]   initializing events service ...
+[LOG]   Requesting machine registration for machine BeaverSim
+[DEBUG] Received response: this_machine: 
+  kind: machine
+  cls_name: BeaverSim
+  obj_id: 1
+  value: ''
+  elems: []
+this_node_name: BeaverSim_1
+other_machines: []
+[LOG]   scheduling periodic hearbeat
+[LOG]   initializing push service
+[LOG]   initializing events service ...
+[LOG]   Requesting machine registration for machine BeaverSim
+[DEBUG] Received response: this_machine: 
+  kind: machine
+  cls_name: BeaverSim
+  obj_id: 2
+  value: ''
+  elems: []
+this_node_name: BeaverSim_2
+other_machines: []
+[LOG]   scheduling periodic hearbeat
+[LOG]   initializing push service
+[LOG]   initializing events service ...
+[TRACE] Sending heartbeat
+[DEBUG] *** event *** request received
+event: 
+  ref: 
+    kind: event
+    cls_name: CallReceiversMethod
+    obj_id: 1
+    value: ''
+    elems: []
+  field_names: ['guard_method_name', 'sender', 'handler_method_name', 'receiver']
+  field_values: 
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: ''
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: every_1s
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+[DEBUG] found whenever events for <class 'beaversim.model.BeaverSim'> machine: [<react.api.metamodel.EventMeta object at 0x1d70d10>, <react.api.metamodel.EventMeta object at 0x1d70c50>, <react.api.metamodel.EventMeta object at 0x1d70b90>, <react.api.metamodel.EventMeta object at 0x1d70dd0>]
+[DEBUG] scheduling 0 whenever events: []
+[DEBUG] Sending back resp:
+status: ok
+result: 
+  kind: primitive
+  cls_name: NoneType
+  obj_id: -1
+  value: None
+  elems: []
+[TRACE] Sending heartbeat
+[DEBUG] *** event *** request received
+event: 
+  ref: 
+    kind: event
+    cls_name: CallReceiversMethod
+    obj_id: 3
+    value: ''
+    elems: []
+  field_names: ['guard_method_name', 'sender', 'handler_method_name', 'receiver']
+  field_values: 
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: ''
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: every_1s
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+[DEBUG] found whenever events for <class 'beaversim.model.BeaverSim'> machine: [<react.api.metamodel.EventMeta object at 0x1d70d10>, <react.api.metamodel.EventMeta object at 0x1d70c50>, <react.api.metamodel.EventMeta object at 0x1d70b90>, <react.api.metamodel.EventMeta object at 0x1d70dd0>]
+[DEBUG] scheduling 0 whenever events: []
+[DEBUG] Sending back resp:
+status: ok
+result: 
+  kind: primitive
+  cls_name: NoneType
+  obj_id: -1
+  value: None
+  elems: []
+[TRACE] Sending heartbeat
+[DEBUG] *** event *** request received
+event: 
+  ref: 
+    kind: event
+    cls_name: CallReceiversMethod
+    obj_id: 5
+    value: ''
+    elems: []
+  field_names: ['guard_method_name', 'sender', 'handler_method_name', 'receiver']
+  field_values: 
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: ''
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: every_1s
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+[DEBUG] found whenever events for <class 'beaversim.model.BeaverSim'> machine: [<react.api.metamodel.EventMeta object at 0x1d70d10>, <react.api.metamodel.EventMeta object at 0x1d70c50>, <react.api.metamodel.EventMeta object at 0x1d70b90>, <react.api.metamodel.EventMeta object at 0x1d70dd0>]
+[DEBUG] scheduling 0 whenever events: []
+[DEBUG] Sending back resp:
+status: ok
+result: 
+  kind: primitive
+  cls_name: NoneType
+  obj_id: -1
+  value: None
+  elems: []
+[TRACE] Sending heartbeat
+[DEBUG] *** event *** request received
+event: 
+  ref: 
+    kind: event
+    cls_name: CallReceiversMethod
+    obj_id: 7
+    value: ''
+    elems: []
+  field_names: ['guard_method_name', 'sender', 'handler_method_name', 'receiver']
+  field_values: 
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: ''
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: every_1s
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+[DEBUG] found whenever events for <class 'beaversim.model.BeaverSim'> machine: [<react.api.metamodel.EventMeta object at 0x1d70d10>, <react.api.metamodel.EventMeta object at 0x1d70c50>, <react.api.metamodel.EventMeta object at 0x1d70b90>, <react.api.metamodel.EventMeta object at 0x1d70dd0>]
+[DEBUG] scheduling 0 whenever events: []
+[DEBUG] Sending back resp:
+status: ok
+result: 
+  kind: primitive
+  cls_name: NoneType
+  obj_id: -1
+  value: None
+  elems: []
+[TRACE] Sending heartbeat
+[DEBUG] *** event *** request received
+event: 
+  ref: 
+    kind: event
+    cls_name: CallReceiversMethod
+    obj_id: 9
+    value: ''
+    elems: []
+  field_names: ['guard_method_name', 'sender', 'handler_method_name', 'receiver']
+  field_values: 
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: ''
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: every_1s
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+[DEBUG] found whenever events for <class 'beaversim.model.BeaverSim'> machine: [<react.api.metamodel.EventMeta object at 0x1d70d10>, <react.api.metamodel.EventMeta object at 0x1d70c50>, <react.api.metamodel.EventMeta object at 0x1d70b90>, <react.api.metamodel.EventMeta object at 0x1d70dd0>]
+[DEBUG] scheduling 0 whenever events: []
+[DEBUG] Sending back resp:
+status: ok
+result: 
+  kind: primitive
+  cls_name: NoneType
+  obj_id: -1
+  value: None
+  elems: []
+[TRACE] Sending heartbeat
+[DEBUG] *** event *** request received
+event: 
+  ref: 
+    kind: event
+    cls_name: CallReceiversMethod
+    obj_id: 11
+    value: ''
+    elems: []
+  field_names: ['guard_method_name', 'sender', 'handler_method_name', 'receiver']
+  field_values: 
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: ''
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: every_1s
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+[DEBUG] found whenever events for <class 'beaversim.model.BeaverSim'> machine: [<react.api.metamodel.EventMeta object at 0x1d70d10>, <react.api.metamodel.EventMeta object at 0x1d70c50>, <react.api.metamodel.EventMeta object at 0x1d70b90>, <react.api.metamodel.EventMeta object at 0x1d70dd0>]
+[DEBUG] scheduling 0 whenever events: []
+[DEBUG] Sending back resp:
+status: ok
+result: 
+  kind: primitive
+  cls_name: NoneType
+  obj_id: -1
+  value: None
+  elems: []
+[TRACE] Sending heartbeat
+[DEBUG] *** event *** request received
+event: 
+  ref: 
+    kind: event
+    cls_name: CallReceiversMethod
+    obj_id: 13
+    value: ''
+    elems: []
+  field_names: ['guard_method_name', 'sender', 'handler_method_name', 'receiver']
+  field_values: 
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: ''
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: every_1s
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+[DEBUG] found whenever events for <class 'beaversim.model.BeaverSim'> machine: [<react.api.metamodel.EventMeta object at 0x1d70d10>, <react.api.metamodel.EventMeta object at 0x1d70c50>, <react.api.metamodel.EventMeta object at 0x1d70b90>, <react.api.metamodel.EventMeta object at 0x1d70dd0>]
+[DEBUG] scheduling 0 whenever events: []
+[DEBUG] Sending back resp:
+status: ok
+result: 
+  kind: primitive
+  cls_name: NoneType
+  obj_id: -1
+  value: None
+  elems: []
+[TRACE] Sending heartbeat
+[DEBUG] *** event *** request received
+event: 
+  ref: 
+    kind: event
+    cls_name: CallReceiversMethod
+    obj_id: 15
+    value: ''
+    elems: []
+  field_names: ['guard_method_name', 'sender', 'handler_method_name', 'receiver']
+  field_values: 
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: ''
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+    - 
+      kind: primitive
+      cls_name: str
+      obj_id: -1
+      value: every_1s
+      elems: []
+    - 
+      kind: machine
+      cls_name: BeaverSim
+      obj_id: 2
+      value: ''
+      elems: []
+[ERROR] Could not process event handler:
+prefresh() returned ERR
+Traceback (most recent call last):
+  File "/home/angel/react_ws/src/react/src/react/core/node.py", line 115, in srv_handler
+    resp = func(req)
+  File "/home/angel/react_ws/src/react/src/react/core/node.py", line 108, in event_handler
+    resp = self.execute_event_req(req)
+  File "/home/angel/react_ws/src/react/src/react/core/node.py", line 92, in execute_event_req
+    result = ev.handler()
+  File "/home/angel/react_ws/src/react/src/react/core/events.py", line 42, in handler
+    return getattr(self.receiver, self.handler_method_name)()
+  File "/home/angel/react_ws/src/beaversim/src/beaversim/model.py", line 40, in every_1s
+    self.draw_beavers()
+  File "/home/angel/react_ws/src/beaversim/src/beaversim/model.py", line 50, in draw_beavers
+    self.term.draw(draw_spec)
+  File "/home/angel/react_ws/src/beaversim/src/beaversim/gui.py", line 72, in draw
+    self.refresh()
+  File "/home/angel/react_ws/src/beaversim/src/beaversim/gui.py", line 42, in refresh
+    self.win.refresh(0,0, self.margin_top,self.margin_left, self.margin_top+self.H-1,self.margin_left+self.W-1)
+error: prefresh() returned ERR
+
+[TRACE] Sending heartbeat
+[TRACE] Sending heartbeat
+[TRACE] Sending heartbeat
+[TRACE] Sending heartbeat
+[TRACE] Sending heartbeat
+[TRACE] Sending heartbeat
+[TRACE] Sending heartbeat
+[TRACE] Sending heartbeat
+[TRACE] Sending heartbeat
