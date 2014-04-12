@@ -33,6 +33,7 @@ class Car(Machine):
     def on_start(self):
         self.data = CarData(name="car",pos_x=0,pos_y=0,v_x=0,v_y=0)
         self.trigger(Register(sender= self, data = self.data))
+        self.closeCars = []
     
     def every_1s(self):
         self.data.pos_x = self.data.pos_x + self.data.v_x
@@ -57,7 +58,16 @@ class Master(Machine):
     def every_1s(self):
         self.draw_cars()
         for car in self.cars:
-            self.trigger(UpdateSensor(sender=self, receiver=car, cars = self.cars))
+            closeCars = []
+            for otherCar in self.cars:
+                #print otherCar
+                #print otherCar.data.pos_x
+                if abs(car.data.pos_x - otherCar.data.pos_x) <= 5:
+                    if abs(car.data.pos_y - otherCar.data.pos_y) <= 5:
+                        closeCars.append(otherCar.data)
+            self.trigger(UpdateSensor(sender=self, receiver=car, closeCars = closeCars))
+            
+        self.trigger(UpdateRemote(cars = self.cars))
 
     def draw_cars(self):
         def fmap(idx):
@@ -67,6 +77,8 @@ class Master(Machine):
         self.term.draw(draw_spec)
 
 class RemoteCtrl(Machine, CursesTerminal):
+    cars = listof(Car)
+    
     def on_start(self):
         CursesTerminal.on_start(self)
         self.cnt = 0
@@ -75,7 +87,10 @@ class RemoteCtrl(Machine, CursesTerminal):
         self.draw_selected()
         self.refresh()
         self.read_spin()
+        self.cars = []
 
+    
+    
     def on_KEY_0(self): self.select_car(0)
     def on_KEY_1(self): self.select_car(1)
     def on_KEY_2(self): self.select_car(2)
@@ -92,13 +107,13 @@ class RemoteCtrl(Machine, CursesTerminal):
 
     
     def on_KEY_UP(self):    
-        self.trigger(ChangeSpeed(idx=self.selected, dx=0,  dy=-1))
+        self.trigger(ChangeSpeed(sender=self, receiver=self.cars[self.selected], dx=0,  dy=-1))
     def on_KEY_DOWN(self):  
-        self.trigger(ChangeSpeed(idx=self.selected, dx=0,  dy=1))
+        self.trigger(ChangeSpeed(sender=self, receiver=self.cars[self.selected], dx=0,  dy=1))
     def on_KEY_LEFT(self):  
-        self.trigger(ChangeSpeed(idx=self.selected, dx=-1, dy=0))
+        self.trigger(ChangeSpeed(sender=self, receiver=self.cars[self.selected], dx=-1, dy=0))
     def on_KEY_RIGHT(self): 
-        self.trigger(ChangeSpeed(idx=self.selected, dx=1,  dy=0))
+        self.trigger(ChangeSpeed(sender=self, receiver=self.cars[self.selected], dx=1,  dy=0))
 
     def select_car(self, idx):
         self.selected = idx;
@@ -141,23 +156,23 @@ class RemoteCtrl(Machine, CursesTerminal):
 """
   Events
 """
-class CtrlEv(Event):
+class CtrlEv(Event): #todo change receiver to car
     sender   = { "ctrl": RemoteCtrl }
-    receiver = { "master":  Master }
+    receiver = { "car":  Car }
 
 class ChangeSpeed(CtrlEv):
-    idx      = int
     dx       = int
     dy       = int
 
     def guard(self):
-        if not 0 <= self.idx < len(self.sim.beavers):
-            return "turtle[%d] not found" % self.idx
-        self._car = self.master.cars[self.idx]
+        pass #todo
+        #if not 0 <= self.idx < len(self.sim.beavers):
+        #    return "turtle[%d] not found" % self.idx
+        #self._car = self.master.cars[self.idx]
 
     def handler(self):
-        self._car.data.v_x = self._car.data.v_x + self.dx
-        self._car.data.v_y = self._car.data.v_y + self.dy
+        self.car.data.v_x = self.car.data.v_x + self.dx
+        self.car.data.v_y = self.car.data.v_y + self.dy
 
 class Register(Event):
     sender   = { "car": Car }
@@ -176,6 +191,18 @@ class Register(Event):
         self.master.cars.append(self.car)
         return self.car
 
+class UpdateRemote(Event):
+    sender   = { "master": Master }
+    receiver = { "ctrl": RemoteCtrl }
+    cars = listof(Car)
+    
+    def guard(self):
+        pass
+
+    def handler(self):
+        self.ctrl.cars = self.cars
+        return self.cars
+
 class UpdatePosition(Event):
     sender   = { "car": Car }
     receiver = { "master": Master }
@@ -192,21 +219,13 @@ class UpdatePosition(Event):
 class UpdateSensor(Event):
     sender   = { "master": Master }
     receiver = { "car": Car }
-    cars = listof(Car)
+    closeCars = listof(Car)
     
     
 
     def guard(self):
         pass
 
-    #move computation to master
     def handler(self):
-        closeCars = []
-        for otherCar in self.cars:
-            print otherCar
-            print otherCar.data.pos_x
-            if abs(self.car.data.pos_x - otherCar.data.pos_x) <= 5:
-                if abs(self.car.data.pos_y - otherCar.data.pos_y) <= 5:
-                    closeCars.append(otherCar.data)
-        self.car.closeCars = closeCars
-        return closeCars
+        self.car.closeCars = self.closeCars
+        return self.closeCars
