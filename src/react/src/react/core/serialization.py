@@ -1,3 +1,4 @@
+import pickle
 import react
 from react import conf
 from react.api import model
@@ -42,9 +43,13 @@ def serialize_objref(robj):
 
 def serialize_objval(robj):
     objref = serialize_objref(robj)
+    pser = None
+    if not (objref.kind == "primitive" or objref.kind == "list"):
+        pser = pickle.dumps(robj);
     fld_names = robj.meta().fields().keys()
     fld_vals = map(lambda fname: serialize_objref(unwrap(getattr(robj, fname))), fld_names)
     return react.msg.ObjValMsg(ref = objref,
+                               pickle_str = pser,
                                field_names = fld_names,
                                field_values = fld_vals)
 
@@ -59,16 +64,22 @@ def deserialize_objref(objref_msg):
         return map(lambda m: deserialize_objref(from_refx(m)), objref_msg.elems)
     else:
         cls_meta = meta.find(objref_msg.kind, objref_msg.cls_name)
-        return cls_meta.cls().find_or_new(objref_msg.obj_id)
+        ret = cls_meta.cls().find_or_new(objref_msg.obj_id)
+        return ret
 
 def deserialize_existing(objref_msg):
     return db.try_find(objref_msg.kind, objref_msg.obj_id)
 
 def deserialize_objval(objval_msg):
-    robj = deserialize_objref(objval_msg.ref)
-    num_flds = len(objval_msg.field_names)
-    for idx in range(num_flds):
-        fname = objval_msg.field_names[idx]
-        fvalue_ref = objval_msg.field_values[idx]
-        setattr(robj, fname, deserialize_objref(fvalue_ref))
+    pstr = objval_msg.pickle_str
+    if pstr is not None and len(pstr) > 0:
+        robj = pickle.loads(objval_msg.pickle_str)
+        robj = react.api.model.ReactObj.translate(robj)
+    else:
+        robj = deserialize_objref(objval_msg.ref)
+        num_flds = len(objval_msg.field_names)
+        for idx in range(num_flds):
+            fname = objval_msg.field_names[idx]
+            fvalue_ref = objval_msg.field_values[idx]
+            setattr(robj, fname, deserialize_objref(fvalue_ref))
     return robj

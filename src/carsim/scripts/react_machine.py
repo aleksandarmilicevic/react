@@ -6,11 +6,11 @@ import react
 from react import conf
 from react import core
 from react.core import node
+from react.utils import curry
 
 import carsim.gui
 from carsim.model import *
 
-conf.debug = conf.E_LOGGER.NULL
 conf.heartbeat = True
 conf.cli = conf.E_THR_OPT.FALSE
 
@@ -20,7 +20,7 @@ def usage():
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         machine_name = str(sys.argv[1])
-
+        conf.debug = curry(conf.E_LOGGER.FILE, "%s.log" % machine_name)
         # if machine_name == "Master":
         #     conf.debug = conf.E_LOGGER.NULL
         #     conf.cli = conf.E_THR_OPT.FALSE

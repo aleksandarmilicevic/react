@@ -36,6 +36,22 @@ class ReactObj(object):
         fields_str = ", ".join(flds)
         return "<%s(%d) { %s }>" % (self.meta().name(), self.id(), fields_str)
 
+    @staticmethod
+    def translate(robj):
+        if not isinstance(robj, react.api.model.ReactObj):
+            return robj
+        cls = type(robj)
+        id = robj.id()
+        ans = cls.find_or_new(id)
+        for fld_name in cls.meta().fields():
+            fld_val = getattr(robj, fld_name)
+            if isinstance(fld_val, react.api.model.Machine):
+                fld_val = type(fld_val).find_or_new(fld_val.id())
+            else:
+                fld_val = ReactObj.translate(fld_val)
+            setattr(ans, fld_name, fld_val)
+        return ans
+
     @classmethod
     def find_or_new(cls, id):
         try:

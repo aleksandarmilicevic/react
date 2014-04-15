@@ -20,7 +20,6 @@ class CarData(Record):
     v_x    = int
     v_y    = int
 
-
 """
   Machines
 """
@@ -32,7 +31,7 @@ class Car(Machine):
         self.data = CarData(name="car",pos_x=0,pos_y=0,v_x=0,v_y=0)
         self.trigger(Register(sender= self, data = self.data))
 
-    def eevery_1s(self):
+    def every_1s(self):
         self.data.pos_x = self.data.pos_x + self.data.v_x
         self.data.pos_y = self.data.pos_y + self.data.v_y
         self.trigger(UpdatePosition())
@@ -45,14 +44,12 @@ class Master(Machine):
 
     def on_start(self):
         self.cars = []
-        #print self
-        #print self.cars
+        self.wtf = 0
 
     def every_1s(self):
         for car in self.cars:
-            self.trigger(UpdateSensor(sender=self, receiver=car, cars = self.cars))
-
-
+            print "sending UpdateSensor to %s" % car
+            self.trigger(UpdateSensor(sender=self, receiver=car, cars=self.cars))
 
 """
   Events
@@ -62,15 +59,12 @@ class Register(Event):
     receiver = { "master": Master }
     data = CarData
 
-
     def guard(self):
         return None
         #if self.data.name in [car.data.name for car in Car.all()]: return "Name taken"
 
     def handler(self):
-        #print "1"
         self.car.data = self.data
-        #print "2"
         self.master.cars.append(self.car)
         return self.car
 
@@ -98,7 +92,6 @@ class UpdateSensor(Event):
 
     #move computation to master
     def handler(self):
-        print "received %d close cars" % len(self.cars)
         closeCars = []
         for otherCar in self.cars:
             if abs(self.car.data.pos_x - otherCar.data.pos_x) <= 5:
