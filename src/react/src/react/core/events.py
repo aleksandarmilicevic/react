@@ -18,6 +18,7 @@ def call_event_service(ev):
     return ev_service(ev_msg)
 
 def find_implicit_receiver(ev_cls):
+    event_name = str(ev_cls)
     receiver_cls = ev_cls.meta().receiver().cls()
     rec_candidates = filter(lambda m: isinstance(m, receiver_cls), react.db.machines())
     if len(rec_candidates) == 0:

@@ -36,6 +36,10 @@ class ReactObj(object):
         fields_str = ", ".join(flds)
         return "<%s(%d) { %s }>" % (self.meta().name(), self.id(), fields_str)
 
+    def __getstate__(self):
+        flds = ["_id"] + self.meta().fields().keys()
+        return dict((fld, getattr(self, fld)) for fld in flds)
+
     @staticmethod
     def translate(robj):
         if not isinstance(robj, react.api.model.ReactObj):
