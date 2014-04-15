@@ -8,15 +8,15 @@ class CursesTerminal(object):
     @classmethod
     def react_config(cls):
         print "configuring curses terminal"
-        conf.cli   = conf.E_THR_OPT.FALSE
-        fname = "%s.log" % cls.__name__
-        file_logger = curry(conf.E_LOGGER.FILE, fname)
-        conf.log   = curry(conf._prepend, "[LOG]   ", file_logger)
-        conf.debug = curry(conf._prepend, "[DEBUG] ", file_logger)
-        conf.trace = curry(conf._prepend, "[TRACE] ", file_logger)
-        conf.warn  = curry(conf._prepend, "[WARN]  ", file_logger)
-        conf.error = curry(conf._prepend, "[ERROR] ", file_logger)
-        
+        # conf.cli   = conf.E_THR_OPT.FALSE
+        # fname = "%s.log" % cls.__name__
+        # file_logger = curry(conf.E_LOGGER.FILE, fname)
+        # conf.log   = curry(conf._prepend, "[LOG]   ", file_logger)
+        # conf.debug = curry(conf._prepend, "[DEBUG] ", file_logger)
+        # conf.trace = curry(conf._prepend, "[TRACE] ", file_logger)
+        # conf.warn  = curry(conf._prepend, "[WARN]  ", file_logger)
+        # conf.error = curry(conf._prepend, "[ERROR] ", file_logger)
+
     def on_start(self):
         self.stdscr = curses.initscr()
         self.key_consts = filter(lambda k: k.startswith("KEY_"), curses.__dict__.keys())

@@ -82,6 +82,7 @@ class ReactNode(object, ListenerHelper):
 
     def execute_event_req(self, req, forward=True):
         ev = ser.deserialize_objval(req.event)
+        conf.debug("executing %s event: %s", type(ev), ev)
         guard_msg = ev.guard()
         status = "ok"
         if guard_msg is None:
@@ -110,7 +111,8 @@ class ReactNode(object, ListenerHelper):
 
     def get_srv_handler(self, srv_name, func, log=True):
         def srv_handler(req):
-            if log: conf.debug("*** %s *** request received\n%s", srv_name, req)
+            if log:
+                conf.debug("*** %s *** request received", srv_name)
             try:
                 resp = func(req)
                 if log: conf.debug("Sending back resp:\n%s", resp)
@@ -235,7 +237,7 @@ class ReactCore(ReactNode):
             self._node_response.pop(machineid)
             self._connected_nodes.pop(machineid)
             react.db.del_machine(react.db.machine(machineid))
-    
+
     def _get_other_machines(self, this_machine):
         """
         Returns a list of connected machines other than `this_machine'
