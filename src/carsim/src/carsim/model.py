@@ -34,11 +34,13 @@ class Car(Machine):
         self.data = CarData(name="car",pos_x=0,pos_y=0,v_x=1,v_y=0)
         self.trigger(Register(sender= self, data = self.data))
         self.closeCars = []
+        print('my id: %d' % self.id())
 
     def every_1s(self):
         self.data.pos_x = self.data.pos_x + self.data.v_x
         self.data.pos_y = self.data.pos_y + self.data.v_y
-        self.trigger(UpdatePosition())
+        ev = UpdatePosition(car_id=self.id(), new_x=self.data.pos_x, new_y=self.data.pos_y)
+        self.trigger(ev)
 
     ##TODO: unreg
 
@@ -54,6 +56,9 @@ class Master(Machine):
         self.term.stop()
 
     def every_1s(self):
+        for car in self.cars:
+            conf.log("-------------- car: %d, %d" % (car.data.pos_x, car.data.pos_y))
+
         self.draw_cars()
         for car in self.cars:
             closeCars = []
@@ -202,24 +207,33 @@ class UpdatePosition(Event):
     sender   = { "car": Car }
     receiver = { "master": Master }
 
+    car_id = int
+    new_x = int
+    new_y = int
+
     def guard(self):
         pass
 
     def handler(self):
+        c = None
         for car in self.master.cars:
-            if car.id() == self.car.id():
-                car = self.car
-        return self.car
+            if car.id() == self.car_id:
+                c = car;
+                break
+        if c is not None:
+            c.data.pos_x = self.new_x
+            c.data.pos_y = self.new_y
 
 class UpdateSensor(Event):
     sender   = { "master": Master }
     receiver = { "car": Car }
-    cars = listof(Car)
+    cars = listof(CarData)
 
     def guard(self):
         pass
 
     def handler(self):
-        print("sensor info: %d nearby cars" % len(self.cars))
+        # print("sensor info: %d nearby cars: %s" % (len(self.cars), self.cars))
+        # print('my pos: %d, %d' % (self.data.pos_x, self.data.pos_y))
         self.car.closeCars = self.cars
         return self.cars

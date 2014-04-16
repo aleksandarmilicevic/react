@@ -108,7 +108,7 @@ class MachineMeta(RecordMeta):
         try:
             return int(time_str)
         except ValueError:
-            if time_str.endswith('ms'): return cls._parse_time_in_sec(time_str[0:-2]) / 1000
+            if time_str.endswith('ms'): return cls._parse_time_in_sec(time_str[0:-2]) / 1000.0
             elif time_str.endswith('s'): return cls._parse_time_in_sec(time_str[0:-1])
             else: raise ValueError()
 

@@ -36,7 +36,7 @@ class BeaverSim(Machine, CursesTerminal):
     def on_exit(self):
         self.term.stop()
 
-    def every_1s(self):
+    def every_100ms(self):
         self.draw_beavers()
         for beaver in self.beavers:
             beaver.pos_x = beaver.pos_x + beaver.v_x
@@ -69,18 +69,18 @@ class RemoteCtrl(Machine, CursesTerminal):
 
     def on_KEY_q(self):
         self.exit()
-        
+
     def on_KEY_c(self):
         self.cnt = self.cnt + 1
         self.trigger(Spawn())
 
-    def on_KEY_UP(self):    
+    def on_KEY_UP(self):
         self.trigger(ChangeSpeed(idx=self.selected, dx=0,  dy=-1))
-    def on_KEY_DOWN(self):  
+    def on_KEY_DOWN(self):
         self.trigger(ChangeSpeed(idx=self.selected, dx=0,  dy=1))
-    def on_KEY_LEFT(self):  
+    def on_KEY_LEFT(self):
         self.trigger(ChangeSpeed(idx=self.selected, dx=-1, dy=0))
-    def on_KEY_RIGHT(self): 
+    def on_KEY_RIGHT(self):
         self.trigger(ChangeSpeed(idx=self.selected, dx=1,  dy=0))
 
     def select_beaver(self, idx):
@@ -110,9 +110,9 @@ class RemoteCtrl(Machine, CursesTerminal):
         try:
             resp = Machine.trigger(self, ev)
             if resp.status == "guard failed":
-                self.draw_status("guard for event %s failed" % ev.meta().name(), 
+                self.draw_status("guard for event %s failed" % ev.meta().name(),
                                  resp.result.value)
-            else: 
+            else:
                 self.draw_status("successfully executed %s event" % ev.meta().name())
         except Exception as ex:
             self.draw_status("error executing %s event" % ev.meta().name(), str(ex))
@@ -120,7 +120,7 @@ class RemoteCtrl(Machine, CursesTerminal):
                              ev, traceback.format_exc())
         finally:
             self.refresh()
-            
+
 """
   Events
 """
@@ -136,10 +136,10 @@ class Spawn(CtrlEv):
             return "Too many turtles"
 
     def handler(self):
-        beaver = Beaver(name  = self.name, 
-                        pos_x = random.randint(0, MAX_X), 
-                        pos_y = random.randint(0, MAX_Y), 
-                        v_x   = random.randint(-1, 1), 
+        beaver = Beaver(name  = self.name,
+                        pos_x = random.randint(0, MAX_X),
+                        pos_y = random.randint(0, MAX_Y),
+                        v_x   = random.randint(-1, 1),
                         v_y   = random.randint(-1, 1))
         self.sim.beavers.append(beaver)
 
@@ -170,25 +170,25 @@ class RedirectBeaver(WheneverEvent):
 
 class RedirectBeaverL(RedirectBeaver):
     def whenever(self): return self.beaver.pos_x < 0
-    def handler(self):  
+    def handler(self):
         self.beaver.pos_x = 0
         self.beaver.v_x = -self.beaver.v_x
 
 class RedirectBeaverR(RedirectBeaver):
     def whenever(self): return self.beaver.pos_x >= MAX_X
-    def handler(self):  
+    def handler(self):
         self.beaver.pos_x = MAX_X-1
         self.beaver.v_x = -self.beaver.v_x
 
 class RedirectBeaverT(RedirectBeaver):
     def whenever(self): return self.beaver.pos_y < 0
-    def handler(self):  
+    def handler(self):
         self.beaver.pos_y = 0
         self.beaver.v_y = -self.beaver.v_y
 
 class RedirectBeaverB(RedirectBeaver):
     def whenever(self): return self.beaver.pos_y >= MAX_Y
-    def handler(self):  
+    def handler(self):
         self.beaver.pos_y = MAX_Y-1
         self.beaver.v_y = -self.beaver.v_y
 
