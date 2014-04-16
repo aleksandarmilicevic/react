@@ -11,7 +11,7 @@ import beaversim.gui
 from beaversim.model import *
 
 #conf.debug = conf.E_LOGGER.NULL
-conf.heartbeat = False
+conf.heartbeat = True
 
 def usage():
     return "usage:\n  rosrun beaversim %s <machine_name>" % sys.argv[0].split("/")[-1]
@@ -26,7 +26,7 @@ if __name__ == "__main__":
         conf.debug = curry(conf._prepend, "[DEBUG] ", file_logger)
         conf.warn  = curry(conf._prepend, "[WARN]  ", file_logger)
         conf.error = curry(conf._prepend, "[ERROR] ", file_logger)
-        conf.trace = conf.E_LOGGER.NULL
+        conf.trace = curry(conf._prepend, "[TRACE] ", file_logger)
 
         react.core.node.ReactMachine(machine_name).start_machine()
 
