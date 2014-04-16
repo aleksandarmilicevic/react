@@ -15,7 +15,10 @@ def call_event_service(ev):
     ev_service = rospy.ServiceProxy(event_srv_name(ev.get_receiver()), react.srv.EventSrv)
     # ev_service = rospy.ServiceProxy(react.core.EVENT_SRV_NAME, react.srv.EventSrv)
     ev_msg = react.core.serialization.serialize_objval(ev)
-    return ev_service(ev_msg)
+    try:
+        return ev_service(ev_msg)
+    except Exception:
+        pass
 
 def find_implicit_receiver(ev_cls):
     event_name = str(ev_cls)
