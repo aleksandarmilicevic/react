@@ -34,7 +34,7 @@ class Car(Machine):
         self.data = CarData(name="car",pos_x=0,pos_y=0,v_x=1,v_y=0)
         self.trigger(Register(sender= self, data = self.data))
         self.closeCars = []
-        print('my id: %d' % self.id())
+        print('my id: %s' % self.id())
 
     def every_1s(self):
         self.data.pos_x = self.data.pos_x + self.data.v_x
@@ -63,8 +63,6 @@ class Master(Machine):
         for car in self.cars:
             closeCars = []
             for otherCar in self.cars:
-                #print otherCar
-                #print otherCar.data.pos_x
                 if abs(car.data.pos_x - otherCar.data.pos_x) <= 5:
                     if abs(car.data.pos_y - otherCar.data.pos_y) <= 5:
                         closeCars.append(otherCar.data)
@@ -169,9 +167,6 @@ class ChangeSpeed(CtrlEv):
 
     def guard(self):
         pass #todo
-        #if not 0 <= self.idx < len(self.sim.beavers):
-        #    return "turtle[%d] not found" % self.idx
-        #self._car = self.master.cars[self.idx]
 
     def handler(self):
         self.car.data.v_x = self.car.data.v_x + self.dx
@@ -217,12 +212,17 @@ class UpdatePosition(Event):
     def handler(self):
         c = None
         for car in self.master.cars:
+            conf.debug("checking car %s, data = %s" % (car, repr(car.data)))
             if car.id() == self.car_id:
                 c = car;
                 break
         if c is not None:
             c.data.pos_x = self.new_x
             c.data.pos_y = self.new_y
+            conf.debug("updated car position: %s data = %s" % (c, repr(c.data)))
+            conf.debug('my cars')
+            for cc in self.master.cars:
+                conf.debug(repr(cc.data))
 
 class UpdateSensor(Event):
     sender   = { "master": Master }

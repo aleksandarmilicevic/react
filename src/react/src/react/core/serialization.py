@@ -1,7 +1,6 @@
 import pickle
 import react
 from react import conf
-from react.api import model
 from react import db
 from react import msg
 from react import meta
@@ -31,13 +30,13 @@ def serialize_objref(robj):
     elif isinstance(robj, list):
         return react.msg.ObjRefMsg(kind      = "list",
                                    cls_name  = "list",
-                                   obj_id    = -1,
+                                   obj_id    = "-1",
                                    value     = "",
                                    elems     = map(lambda o: to_refx(serialize_objref(o)), robj))
     else:
         return react.msg.ObjRefMsg(kind      = "primitive",
                                    cls_name  = type(robj).__name__,
-                                   obj_id    = -1,
+                                   obj_id    = "-1",
                                    value     = str(robj),
                                    elems     = [])
 

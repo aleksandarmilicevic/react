@@ -82,7 +82,7 @@ class ReactNode(object, ListenerHelper):
 
     def execute_event_req(self, req, forward=True):
         ev = ser.deserialize_objval(req.event)
-        conf.debug("executing %s event: %s", type(ev), ev)
+        conf.debug("executing event: %s", repr(ev))
         guard_msg = ev.guard()
         status = "ok"
         if guard_msg is None:
@@ -284,6 +284,7 @@ class ReactMachine(ReactNode):
         self._node_name = None
         self._other_machines = list()
         self._scheduler = Scheduler()
+        react.curr_node = self
 
     def machine_name(self):   return self._machine_name
     def machine(self):        return self._machine
