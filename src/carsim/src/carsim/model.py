@@ -36,12 +36,68 @@ class Car(Machine):
         self.closeCars = []
         print('my id: %s' % self.id())
 
+##    def every_1s(self):
+##        self.data.pos_x = self.data.pos_x + self.data.v_x
+##        self.data.pos_y = self.data.pos_y + self.data.v_y
+##        ev = UpdatePosition(car_id=self.id(), new_x=self.data.pos_x, new_y=self.data.pos_y)
+##        self.trigger(ev)
+
     def every_1s(self):
+        # cars at intersection
+        carsAtIntersection = []
+        for car in self.closeCars:
+            if (car.data.pos_x+car.data.v_x == self.data.pos_x+self.data.v_x
+                and car.data.pos_y+car.data.v_y == self.data.pos_y+self.data.v_y
+                and car != self):
+                carsatintersection.append(car)
+
+        # check of there is a headon expected collision
+        for car in carsatintersection:
+            if (car.data.pos_x == self.data.pos_x+2*self.data.vel_x
+                and car.data.pos_y == self.data.pos_y+2*self.data.vel_y):
+
+                leftfull = False
+                leftupfull = False
+                for car1 in self.closeCars:
+                    if (car.data.pos_x+car.data.v_x == self.data.pos_x-self.data.v_y
+                        and car.data.pos_y+car.data.v_y == self.data.pos_y+self.data.v_x):
+                        leftfull=True
+                    if (car.data.pos_x+car.data.v_x == self.data.pos_x+self.data.v_x-self.data.v_y
+                        and car.data.pos_y+car.data.v_y == self.data.pos_y+self.data.v_x+self.data.v_y):
+                        leftupfull=True
+                if not leftfull:
+                    self.data.pos_x = self.data.pos_x-self.data.v_y
+                    self.data.pos_y = self.data.pos_y+self.data.v_x
+                    ev = UpdatePosition(car_id=self.id(), new_x=self.data.pos_x, new_y=self.data.pos_y)
+                    self.trigger(ev)
+                    return None
+
+                if not leftupfull:
+                    self.data.pos_x = self.data.pos_x+self.data.v_x-self.data.v_y
+                    self.data.pos_y = self.data.pos_y+self.data.v_x+self.data.v_y
+                    ev = UpdatePosition(car_id=self.id(), new_x=self.data.pos_x, new_y=self.data.pos_y)
+                    self.trigger(ev)
+                    return None
+
+                ev = UpdatePosition(car_id=self.id(), new_x=self.data.pos_x, new_y=self.data.pos_y)
+                self.trigger(ev)
+                return None
+
+        #right of way
+        for car in carsatintersection:
+            if (car.data.pos_x+car.data.v_x == self.data.pos_x-self.data.v_y
+                and car.data.pos_y+car.data.v_y == self.data.pos_y+self.data.v_x):
+
+                ev = UpdatePosition(car_id=self.id(), new_x=self.data.pos_x, new_y=self.data.pos_y)
+                self.trigger(ev)
+                return None
+
+        
         self.data.pos_x = self.data.pos_x + self.data.v_x
         self.data.pos_y = self.data.pos_y + self.data.v_y
         ev = UpdatePosition(car_id=self.id(), new_x=self.data.pos_x, new_y=self.data.pos_y)
-        self.trigger(ev)
-
+        self.trigger(ev)   
+    
     ##TODO: unreg
 
 
