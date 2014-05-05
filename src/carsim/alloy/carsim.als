@@ -8,7 +8,7 @@ sig Car {
   x, y: Int -> Time,
   vx, vy: Int -> Time
 } {
-  all t: Time { 
+  all t: Time {
     one x.t and one y.t
     one vx.t and one vy.t
     x.t >= 0 and y.t >= 0
@@ -50,7 +50,7 @@ pred assertStep_2[c: Car, t, t': Time] {
   let x' = c.x.t.plus[c.vx.t], y' = c.y.t.plus[c.vy.t] {
     (no c2: Car - c | samePos[x', y', c2.x.t.plus[c2.vx.t], c2.y.t.plus[c2.vy.t]]) implies {
       c.x.t' = x'
-      c.y.t' = y'      
+      c.y.t' = y'
     } else {
       -- turn right: R(90) = [ 0, -1; 1, 0 ]
       let vx = c.vx.t, vy = c.vy.t {
@@ -63,18 +63,35 @@ pred assertStep_2[c: Car, t, t': Time] {
   c.vy.t' = c.vy.t
 }
 
+pred assertStep_3[c: Car, t, t': Time] {
+  let x' = c.x.t.plus[c.vx.t], y' = c.y.t.plus[c.vy.t] {
+    (no c2: Car - c |
+      samePos[x', y', c2.x.t, c2.y.t] or
+      samePos[x', y', c2.x.t.plus[c2.vx.t], c2.y.t.plus[c2.vy.t]]
+    ) implies {
+      c.x.t' = x'
+      c.y.t' = y'
+    } else {
+      -- don't move
+      c.x.t' = c.x.t
+      c.y.t' = c.y.t
+    }
+  }
+  c.vx.t' = c.vx.t
+  c.vy.t' = c.vy.t
+}
 
 pred carMovement {
-  all t: Time - tOrd/last | 	
+  all t: Time - tOrd/last |
     let t' = t.next |
       all c: Car |
-        // assertStep_1_no_col_det[c, t, t']    
-        assertStep_2[c, t, t']    
+        // assertStep_1_no_col_det[c, t, t']
+        assertStep_3[c, t, t']
 }
 
 pred noCollision {
-  no t: Time | 
-    some disj c1, c2: Car | 
+  no t: Time |
+    some disj c1, c2: Car |
       samePos[c1, c2, t]
 }
 
@@ -84,13 +101,5 @@ pred zeroSpeedAtStart {
 
 check {
   carMovement implies noCollision
-} for 2 but exactly 3 Car
-
-
-
-
-
-
-
-
+} for 2 but exactly 5 Car
 
