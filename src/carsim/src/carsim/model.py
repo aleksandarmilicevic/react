@@ -44,17 +44,17 @@ class Car(Machine):
 
     def every_1s(self):
         # cars at intersection
-        carsAtIntersection = []
+        carsatintersection = []
         for car in self.closeCars:
             if (car.data.pos_x+car.data.v_x == self.data.pos_x+self.data.v_x
                 and car.data.pos_y+car.data.v_y == self.data.pos_y+self.data.v_y
                 and car != self):
                 carsatintersection.append(car)
-
+                
         # check of there is a headon expected collision
         for car in carsatintersection:
-            if (car.data.pos_x == self.data.pos_x+2*self.data.vel_x
-                and car.data.pos_y == self.data.pos_y+2*self.data.vel_y):
+            if (car.data.pos_x == self.data.pos_x+2*self.data.v_x
+                and car.data.pos_y == self.data.pos_y+2*self.data.v_y):
 
                 leftfull = False
                 leftupfull = False
@@ -96,7 +96,8 @@ class Car(Machine):
         self.data.pos_x = self.data.pos_x + self.data.v_x
         self.data.pos_y = self.data.pos_y + self.data.v_y
         ev = UpdatePosition(car_id=self.id(), new_x=self.data.pos_x, new_y=self.data.pos_y)
-        self.trigger(ev)   
+        self.trigger(ev)
+        return None
     
     ##TODO: unreg
 
@@ -121,10 +122,10 @@ class Master(Machine):
             for otherCar in self.cars:
                 if abs(car.data.pos_x - otherCar.data.pos_x) <= 5:
                     if abs(car.data.pos_y - otherCar.data.pos_y) <= 5:
-                        closeCars.append(otherCar.data)
+                        closeCars.append(otherCar)
             self.trigger(UpdateSensor(sender=self, receiver=car, cars=closeCars))
         # this looks wrong: the receiver is not set!
-        # self.trigger(UpdateRemote(cars = self.cars))
+        self.trigger(UpdateRemote(cars = self.cars))
 
     def draw_cars(self):
         def fmap(idx):
@@ -213,7 +214,7 @@ class RemoteCtrl(Machine, CursesTerminal):
 """
   Events
 """
-class CtrlEv(Event): #todo change receiver to car
+class CtrlEv(Event):
     sender   = { "ctrl": RemoteCtrl }
     receiver = { "car":  Car }
 
