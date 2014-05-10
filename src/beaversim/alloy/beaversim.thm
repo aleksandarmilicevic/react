@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<alloy>
+
+<view>
+
+<projection> <type name="Time"/> </projection>
+
+<defaultnode/>
+
+<defaultedge/>
+
+<node>
+   <type name="Beaver"/>
+   <type name="Int"/>
+   <type name="String"/>
+   <type name="Time"/>
+   <type name="univ"/>
+   <type name="UpdatePosition"/>
+   <type name="seq/Int"/>
+   <type name="tOrd/Ord"/>
+   <set name="$noCollision_c1" type="Beaver"/>
+   <set name="$noCollision_c2" type="Beaver"/>
+   <set name="$noCollision_t" type="Time"/>
+   <set name="First" type="tOrd/Ord"/>
+   <set name="Next" type="tOrd/Ord"/>
+   <set name="t" type="Event"/>
+   <set name="t&apos;" type="Event"/>
+</node>
+
+<node shape="Ellipse" color="Green">
+   <type name="Event"/>
+</node>
+
+<edge visible="no" attribute="yes">
+   <relation name="vx"> <type name="Beaver"/> <type name="Int"/> </relation>
+   <relation name="vy"> <type name="Beaver"/> <type name="Int"/> </relation>
+   <relation name="x"> <type name="Beaver"/> <type name="Int"/> </relation>
+   <relation name="y"> <type name="Beaver"/> <type name="Int"/> </relation>
+</edge>
+
+</view>
+
+</alloy>

@@ -60,7 +60,7 @@ sig UpdatePosition extends Event {
     c.vy.t' = c.vy.t
   }
 }*/
-/*{
+{
   all c: Car | let x' = c.x.t.plus[c.vx.t], y' = c.y.t.plus[c.vy.t] {
     (no c2: Car - c |
       samePos[x', y', c2.x.t.plus[c2.vx.t], c2.y.t.plus[c2.vy.t]]
@@ -77,8 +77,8 @@ sig UpdatePosition extends Event {
     c.vx.t' = c.vx.t
     c.vy.t' = c.vy.t
   }
-}*/
-{
+}
+/*{
   all c: Car | let x' = c.x.t.plus[c.vx.t], y' = c.y.t.plus[c.vy.t] {
     (no c2: Car - c |
       samePos[x', y', c2.x.t, c2.y.t] or
@@ -94,7 +94,7 @@ sig UpdatePosition extends Event {
     c.vx.t' = c.vx.t
     c.vy.t' = c.vy.t
   }
-}
+}*/
 
 pred noCollision {
   no t: Time |
