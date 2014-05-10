@@ -59,7 +59,7 @@ sig UpdatePosition extends Event {
     b.vy.t' = b.vy.t
   }
 }*/
-{
+/*{
   all b: Beaver | let x' = b.x.t.plus[b.vx.t], y' = b.y.t.plus[b.vy.t] {
     (no b2: Beaver - b |
       samePos[x', y', b2.x.t.plus[b2.vx.t], b2.y.t.plus[b2.vy.t]]
@@ -76,8 +76,24 @@ sig UpdatePosition extends Event {
     b.vx.t' = b.vx.t
     b.vy.t' = b.vy.t
   }
+}*/
+{
+  all b: Beaver | let x' = b.x.t.plus[b.vx.t], y' = b.y.t.plus[b.vy.t] {
+    (no b2: Beaver - b |
+      samePos[x', y', b2.x.t.plus[b2.vx.t], b2.y.t.plus[b2.vy.t]] or
+      samePos[x', y', b2.x.t, b2.y.t]
+    ) implies {
+      b.x.t' = x'
+      b.y.t' = y'
+    } else {
+      // otherwise, don't move
+      b.x.t' = b.x.t
+      b.y.t' = b.y.t
+    }
+    b.vx.t' = b.vx.t
+    b.vy.t' = b.vy.t
+  }
 }
-
 check noCollision {
   no t: Time |
     some disj b1, b2: Beaver |
