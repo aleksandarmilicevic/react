@@ -109,7 +109,7 @@ class RemoteCtrl(Machine, CursesTerminal):
     def trigger(self, ev):
         try:
             resp = Machine.trigger(self, ev)
-            if resp.status == "guard failed":
+            if resp is not None and resp.status == "guard failed":
                 self.draw_status("guard for event %s failed" % ev.meta().name(),
                                  resp.result.value)
             else:

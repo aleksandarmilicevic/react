@@ -20,9 +20,13 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         machine_name = str(sys.argv[1])
 
-        # if machine_name == "BeaverSim":
-        #     conf.cli = conf.E_THR_OPT.FALSE
-        #     #conf.log = conf.E_LOGGER.NULL
+        file_logger = curry(conf.E_LOGGER.FILE, "%s.log" % machine_name)
+        conf.cli = conf.E_THR_OPT.FALSE
+        conf.log   = curry(conf._prepend, "[LOG]   ", file_logger)
+        conf.debug = curry(conf._prepend, "[DEBUG] ", file_logger)
+        conf.warn  = curry(conf._prepend, "[WARN]  ", file_logger)
+        conf.error = curry(conf._prepend, "[ERROR] ", file_logger)
+        conf.trace = curry(conf._prepend, "[TRACE] ", file_logger)
 
         react.core.node.ReactMachine(machine_name).start_machine()
 
