@@ -70,6 +70,8 @@ class ReactNode(object, ListenerHelper):
         receiver_cls = receiver.meta().cls()
         wh_ev_metas = react.meta.find_whenever_events(receiver_cls)
         conf.debug("found whenever events for %s machine: %s", receiver_cls, wh_ev_metas)
+        if wh_ev_metas == []:
+            return None
         wh_events = reduce(lambda l1, l2: l1 + l2,
                            map(lambda wh_ev_meta: wh_ev_meta.cls().instantiate(receiver),
                                wh_ev_metas))
@@ -80,6 +82,7 @@ class ReactNode(object, ListenerHelper):
 
     def execute_event_req(self, req, forward=True):
         ev = ser.deserialize_objval(req.event)
+        conf.debug("executing event: %s", repr(ev))
         guard_msg = ev.guard()
         status = "ok"
         if guard_msg is None:
@@ -108,7 +111,8 @@ class ReactNode(object, ListenerHelper):
 
     def get_srv_handler(self, srv_name, func, log=True):
         def srv_handler(req):
-            if log: conf.debug("*** %s *** request received\n%s", srv_name, req)
+            if log:
+                conf.debug("*** %s *** request received", srv_name)
             try:
                 resp = func(req)
                 if log: conf.debug("Sending back resp:\n%s", resp)
@@ -233,7 +237,7 @@ class ReactCore(ReactNode):
             self._node_response.pop(machineid)
             self._connected_nodes.pop(machineid)
             react.db.del_machine(react.db.machine(machineid))
-    
+
     def _get_other_machines(self, this_machine):
         """
         Returns a list of connected machines other than `this_machine'
@@ -280,6 +284,7 @@ class ReactMachine(ReactNode):
         self._node_name = None
         self._other_machines = list()
         self._scheduler = Scheduler()
+        react.curr_node = self
 
     def machine_name(self):   return self._machine_name
     def machine(self):        return self._machine

@@ -2,6 +2,7 @@ import copy
 import react
 from react import meta
 from react import db
+from react import conf
 from react.api.types import Type
 
 def is_func_type(x):
@@ -14,6 +15,13 @@ class ReactObjMClass(type):
         Intercept constructor calls and register created instances with react.db
         """
         obj = super(ReactObjMClass, cls).__call__(*args, **kwargs)
+        if type(obj).is_record():
+            if react.curr_node is not None:
+                m = react.curr_node.machine()
+                if m is not None:
+                    obj._id = "%s__%s" % (m.id(), obj._id)
+                    conf.log("!!! changed id: %s" % obj)
+
         react.db.add(cls.kind(), obj)
         return obj
 
@@ -108,10 +116,8 @@ class MachineMeta(RecordMeta):
         try:
             return int(time_str)
         except ValueError:
-            if time_str.endswith('ms'):
-                return cls._parse_time_in_sec(time_str[0:-2]) / 1000.0
-            elif time_str.endswith('s'):
-                return cls._parse_time_in_sec(time_str[0:-1])
+            if time_str.endswith('ms'): return cls._parse_time_in_sec(time_str[0:-2]) / 1000.0
+            elif time_str.endswith('s'): return cls._parse_time_in_sec(time_str[0:-1])
             else: raise ValueError()
 
     def _extract_timer_events(self, dct):

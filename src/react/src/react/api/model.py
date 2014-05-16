@@ -3,6 +3,7 @@ import thread
 
 from .metamodel import *
 from react import db
+from react import conf
 from react.api.wrappers import *
 
 class ReactObj(object):
@@ -16,13 +17,13 @@ class ReactObj(object):
         @param **kwargs dict<str, object>; initial field values
         """
         ReactObj._id_cnt = ReactObj._id_cnt + 1
-        self._id = ReactObj._id_cnt
+        self._id = str(ReactObj._id_cnt)
         self._init_fields()
         for fname, fvalue in kwargs.iteritems():
             self.set_field(fname, fvalue)
 
     def __str__(self):
-        return "%s(%d)" % (self.meta().name(), self.id())
+        return "%s(%s)" % (self.meta().name(), self.id())
 
     def __repr__(self):
         flds = []
@@ -34,7 +35,27 @@ class ReactObj(object):
                 val_str = str(val)
             flds.append("%s: %s" % (fld_name, val_str))
         fields_str = ", ".join(flds)
-        return "<%s(%d) { %s }>" % (self.meta().name(), self.id(), fields_str)
+        return "<%s(%s) { %s }>" % (self.meta().name(), self.id(), fields_str)
+
+    def __getstate__(self):
+        flds = ["_id"] + self.meta().fields().keys()
+        return dict((fld, getattr(self, fld)) for fld in flds)
+
+    @staticmethod
+    def translate(robj):
+        if not isinstance(robj, react.api.model.ReactObj):
+            return robj
+        cls = type(robj)
+        id = robj.id()
+        ans = cls.find_or_new(id)
+        for fld_name in cls.meta().fields():
+            fld_val = getattr(robj, fld_name)
+            if isinstance(fld_val, react.api.model.Machine):
+                fld_val = type(fld_val).find_or_new(fld_val.id())
+            else:
+                fld_val = ReactObj.translate(fld_val)
+            setattr(ans, fld_name, fld_val)
+        return ans
 
     @classmethod
     def find_or_new(cls, id):
