@@ -22,7 +22,7 @@ sig Time {}
 
 sig Beaver {
   x, y: Int(1..4) -> Time,
-  vx, vy: Int(-2..2) -> Time
+  vx, vy: Int(-1..1) -> Time
 } {
   all t: Time {
     one x.t and one y.t
@@ -52,14 +52,16 @@ sig UpdatePosition extends Event {}
 {
   all b: Beaver | let x' = b.x.t.plus[b.vx.t], y' = b.y.t.plus[b.vy.t] {
     (no b2: Beaver - b |
-      samePos[x', y', b2.x.t.plus[b2.vx.t], b2.y.t.plus[b2.vy.t]] or
-      samePos[x', y', b2.x.t, b2.y.t]
+      samePos[x', y', b2.x.t.plus[b2.vx.t], b2.y.t.plus[b2.vy.t]]
     ) implies {
       b.x.t' = x'
       b.y.t' = y'
     } else {
-      b.x.t' = b.x.t
-      b.y.t' = b.y.t
+      // turn right: R(90) = [ 0, -1; 1, 0 ]
+      let vx = b.vx.t, vy = b.vy.t {
+        b.x.t' = b.x.t.plus[vx.mul[0].plus[vy.mul[-1]]]
+        b.y.t' = b.y.t.plus[vx.mul[1].plus[vy.mul[0]]]
+      }  
     }
     b.vx.t' = b.vx.t
     b.vy.t' = b.vy.t
@@ -74,4 +76,4 @@ check noCollision {
   no t: Time |
     some disj b1, b2: Beaver |
       samePos[b1, b2, t]
-} for 2 but 7 Int, 3 Beaver, exactly 2 Time, exactly 1 Event
+} for 2 but 7 Int, 2 Beaver, exactly 2 Time, exactly 1 Event

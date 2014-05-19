@@ -2,22 +2,9 @@ module BeaverSim
 
 open util/ordering[Time] as tOrd
 
-sig Time {}
-
-sig Beaver {
-  x, y: Int(1..4) -> Time,
-  vx, vy: Int(-1..1) -> Time
-} {
-  all t: Time {
-    one x.t and one y.t
-    one vx.t and one vy.t
-    (vx.t = 0 or vy.t = 0)
-  }
-}
-
-fact initiallyNotPiledUp {
-  no disj c1, c2: Beaver | samePos[c1, c2, tOrd/first]
-}
+// =======================================================
+//   Helper preds/funs
+// =======================================================
 
 pred samePos[x1, y1: Int, x2, y2: Int] {
   x1 = x2 and y1 = y2
@@ -39,6 +26,31 @@ fun cellsCrossed[b: Beaver, t, t': Time]: set Int {
   {i: Int | some x: dx[b, t, t'] | some y: dy[b, t, t'] | i = y.mul[5].plus[x]}
 }
 
+// =======================================================
+//   Model
+// =======================================================
+
+sig Time {}
+
+sig Beaver {
+  x, y: Int(1..4) -> Time,
+  vx, vy: Int(-1..1) -> Time
+} {
+  all t: Time {
+    one x.t and one y.t
+    one vx.t and one vy.t
+    (vx.t = 0 or vy.t = 0)
+  }
+}
+
+fact initiallyNotPiledUp {
+  no disj c1, c2: Beaver | samePos[c1, c2, tOrd/first]
+}
+
+// =======================================================
+//   Events
+// =======================================================
+
 abstract sig Event {
   t, t': Time
 }
@@ -48,17 +60,7 @@ fact {
   all e: Event | e.t' = (e.t).next
 }
 
-sig UpdatePosition extends Event {
-}
-// no colision detection
-/*{
-  all b: Beaver {
-    b.x.t' = b.x.t.plus[b.vx.t]
-    b.y.t' = b.y.t.plus[b.vy.t]
-    b.vx.t' = b.vx.t
-    b.vy.t' = b.vy.t
-  }
-}*/
+sig UpdatePosition extends Event {}
 {
   all b: Beaver | let x' = b.x.t.plus[b.vx.t], y' = b.y.t.plus[b.vy.t] {
     (no b2: Beaver - b |
@@ -68,11 +70,6 @@ sig UpdatePosition extends Event {
       b.x.t' = x'
       b.y.t' = y'
     } else {
-      // turn right: R(90) = [ 0, -1; 1, 0 ]
-      /* let vx = b.vx.t, vy = b.vy.t {
-        b.x.t' = b.x.t.plus[vx.mul[0].plus[vy.mul[-1]]]
-        b.y.t' = b.y.t.plus[vx.mul[1].plus[vy.mul[0]]]
-      }  */
       b.x.t' = b.x.t
       b.y.t' = b.y.t
     }
@@ -81,22 +78,9 @@ sig UpdatePosition extends Event {
   }
 }
 
-sig BounceBackX extends Event {
-}
-{
-  all b: Beaver |
-    (b.x.t = 1 && b.vx.t = -1) implies {
-      b.x.t' = b.x.t
-      b.y.t' = b.y.t
-      b.vx.t' = 0.minus[b.vx.t]
-      b.vy.t' = b.vy.t
-    } else {
-      b.x.t' = b.x.t
-      b.y.t' = b.y.t
-      b.vx.t' = b.vx.t
-      b.vy.t' = b.vy.t
-    }
-}
+// =======================================================
+//   Checks
+// =======================================================
 
 check noCollision {
   no t: Time |
