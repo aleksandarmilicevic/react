@@ -70,6 +70,11 @@ sig UpdatePosition extends Event {}
       b.x.t' = x'
       b.y.t' = y'
     } else {
+/*      // turn right: R(90) = [ 0, -1; 1, 0 ]
+      let vx = b.vx.t, vy = b.vy.t {
+        b.x.t' = b.x.t.plus[vx.mul[0].plus[vy.mul[-1]]]
+        b.y.t' = b.y.t.plus[vx.mul[1].plus[vy.mul[0]]]
+      }  */
       b.x.t' = b.x.t
       b.y.t' = b.y.t
     }
@@ -87,4 +92,4 @@ check noCollision {
     some disj b1, b2: Beaver |
       samePos[b1, b2, t]
       // t != tOrd/last && some (cellsCrossed[b1, t, t.next] & cellsCrossed[b2, t, t.next])
-} for 2 but 7 Int, 3 Beaver, exactly 3 Time, exactly 2 Event
+} for 2 but 7 Int, 3 Beaver, exactly 2 Time, exactly 1 Event

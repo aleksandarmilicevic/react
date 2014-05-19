@@ -53,6 +53,7 @@ sig UpdatePosition extends Event {}
   all b: Beaver | let x' = b.x.t.plus[b.vx.t], y' = b.y.t.plus[b.vy.t] {
     (no b2: Beaver - b |
       samePos[x', y', b2.x.t.plus[b2.vx.t], b2.y.t.plus[b2.vy.t]]
+      -- or samePos[x', y', b2.x.t, b2.y.t]
     ) implies {
       b.x.t' = x'
       b.y.t' = y'
@@ -61,7 +62,9 @@ sig UpdatePosition extends Event {}
       let vx = b.vx.t, vy = b.vy.t {
         b.x.t' = b.x.t.plus[vx.mul[0].plus[vy.mul[-1]]]
         b.y.t' = b.y.t.plus[vx.mul[1].plus[vy.mul[0]]]
-      }  
+      }
+      // b.x.t' = b.x.t
+      // b.y.t' = b.y.t    
     }
     b.vx.t' = b.vx.t
     b.vy.t' = b.vy.t
