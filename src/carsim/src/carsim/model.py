@@ -42,7 +42,7 @@ class Car(Machine):
 ##        ev = UpdatePosition(car_id=self.id(), new_x=self.data.pos_x, new_y=self.data.pos_y)
 ##        self.trigger(ev)
 
-    def every_1s(self):
+    def every_100ms(self):
         # cars at intersection
         carsatintersection = []
         for car in self.closeCars:
@@ -112,7 +112,7 @@ class Master(Machine):
     def on_exit(self):
         self.term.stop()
 
-    def every_1s(self):
+    def every_100ms(self):
         for car in self.cars:
             conf.log("-------------- car: %d, %d" % (car.data.pos_x, car.data.pos_y))
 

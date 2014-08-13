@@ -1,0 +1,71 @@
+record CarInfo {
+  id: String,
+  x, y: int, 
+  vx, vy: int
+
+  def nextPosX() { return x + vx }
+  def nextPosY() { return y + vy }
+}
+
+context Car {
+  me: CarInfo, 
+  nearbyCars: String -> CarInfo
+
+  on Sensor[CarDetected](car: CarInfo) {
+    nearbyCars[car.id] = car
+  }
+
+  // ------------------ attempt 1 -----------------
+  every(1s) {
+    // move according to speed
+    me.x = me.nextPosX()
+    me.y = me.nextPosY()
+    Actuator[MoveTo](me.x, me.y)
+  } // -> CEX
+
+  // ------------------ attempt 2 -----------------
+  every(1s) {
+    // move according to speed if no other car headed there
+    x' = me.nextPosX()
+    y' = me.nextPosY()
+    if (no nearbyCars, (c) => x' == c.nextPosX() && y' == c.nextPosY()) {
+      me.x = x'
+      me.y = y'
+    } else {
+      // turn right
+      me.x = me.x - me.vy
+      me.y = me.y + me.vx
+    }
+    Actuator[MoveTo](me.x, me.y)
+  } // -> CEX
+
+  // ------------------ attempt 3 -----------------
+  every(1s) {
+    // move according to speed if no other car headed there
+    x' = me.nextPosX()
+    y' = me.nextPosY()
+    if (no nearbyCars, (c) => x' == c.nextPosX() && y' == c.nextPosY()) {
+      me.x = x'
+      me.y = y'
+      Actuator[MoveTo](me.x, me.y)
+    } else {
+      // don't move
+    }    
+  } // -> CEX
+
+  // ------------------ attempt 4 -----------------
+  every(1s) {
+    // move according to speed if no other car headed there
+    x' = me.nextPosX()
+    y' = me.nextPosY()
+    if (no nearbyCars, (c) => (x' == c.nextPosX() && y' == c.nextPosY()) ||
+                              (x' == c.me.x && y' == c.me.y)) {
+      me.x = x'
+      me.y = y'
+      Actuator[MoveTo](me.x, me.y)
+    } else {
+      // don't move
+    }    
+  } // -> no CEX
+  
+}
