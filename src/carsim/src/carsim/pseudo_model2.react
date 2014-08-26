@@ -1,0 +1,58 @@
+class CarInfo {
+  id: String,
+  x, y: int, 
+  v: int,
+  theta: float
+
+  def nextPosX() { return x + v*sin(theta) }
+  def nextPosY() { return y + v*cos(theta) }
+}
+
+abstract class Obj(x: int, y int)
+case class CarObj extends Obj
+case class Wall   extends Obj
+case class Target extends Obj
+
+class HuskyRobot {
+  me: CarInfo, 
+  nearbyObjs: Obj[]
+
+  on Sensor[Proximity](objs: Obj[]) {
+    nearbyObjs = objs
+  }
+
+  on Sensor[RemoteControllerUP]()    { me.v += 1 }
+  on Sensor[RemoteControllerDOWN]()  { me.v -= 1 }
+  on Sensor[RemoteControllerLEFT]()  { me.theta += 0.1; }
+  on Sensor[RemoteControllerRIGHT]() { me.theta -= 0.1; }
+
+  def noWallAt(x, y: int) {
+    no nearbyObjs, (o) => obj is Wall && obj.x == x && obj.y == y
+  }
+
+  def noNearbyCar(x, y: int, d: int) {
+    no nearbyObjs, (o) => obj is Car && abs(obj.x - x) < d || abs(obj.y - y) < d
+  }
+
+  def targetAt(x, y: int) {
+    some nearbyObjs, (o) => obj is Target && obj.x == x && obj.y == y
+  }
+  
+  every(1s) {
+    if targetAt(me.x, me.y) {
+      // hooray 
+    } else {
+      // move according to speed if no other car headed there
+      x' = me.nextPosX()
+      y' = me.nextPosY()
+      if noWallAt(x', y') && noNearbyCar(x', y', 2) {
+        me.x = x'
+        me.y = y'
+        Actuator[MoveTo](me.x, me.y)
+      } else {
+        // don't move 
+        // OR do something smarter
+      }    
+    }
+  }   
+}
